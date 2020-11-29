@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.github.ylfjm.mapper.AdminRoleMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into system_admin__role (
+        admin_id,
+        role_id
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.adminId},
+            #{item.roleId}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectRoleIdsByAdminId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select role_id from system_admin__role where admin_id = #{adminId}
+    </select>
+
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.github.ylfjm.mapper.AdminMapper">
+
+    <resultMap id="AdminWithRole" type="com.github.ylfjm.pojo.po.Admin">
+        <result column="user_id" property="id" jdbcType="INTEGER"/>
+        <collection property="roleIds" ofType="com.github.ylfjm.pojo.po.AdminRole" select="selectRoleIdByAdminId" column="user_id">
+            <result column="user_id" property="adminId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <!--获取管理员列表，携带角色信息-->
+    <select id="selectWithRole" resultMap="AdminWithRole">
+        select distinct
+        a.id as user_id,
+        a.user_name,
+        a.password,
+        a.real_name,
+        a.sex,
+        a.phone,
+        a.email,
+        a.dept_id,
+        d.`name` as deptName,
+        a.remark,
+        a.forbidden,
+        a.creator,
+        a.create_time,
+        a.updater,
+        a.update_time
+        from system_admin a
+        left join system_department d on d.id = a.dept_id
+        <if test="roleId != null">
+            inner join system_admin__role ar on a.id = ar.admin_id and ar.role_id = #{roleId}
+        </if>
+        where a.sys_type = #{sysType}
+        <if test="deptId != null">
+            and a.dept_id = #{deptId}
+        </if>
+        <if test="realName != null and realName != ''">
+            and a.real_name like CONCAT('%', #{realName}, '%')
+        </if>
+        <if test="forbidden != null">
+            and a.forbidden = #{forbidden}
+        </if>
+    </select>
+
+    <select id="selectRoleIdByAdminId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select role_id from system_admin__role where admin_id = #{user_id}
+    </select>
+
+</mapper>

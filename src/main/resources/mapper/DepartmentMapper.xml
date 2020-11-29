@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.github.ylfjm.mapper.DepartmentMapper">
+
+    <select id="page" resultType="com.github.ylfjm.pojo.po.Department">
+        select
+        d.id,
+        d.`name`,
+        d.creator,
+        d.create_time,
+        d.updater,
+        d.update_time,
+        (select count(1) from system_admin where dept_id = d.id and sys_type = #{sysType}) as accountCount
+        from system_department d
+        where d.sys_type = #{sysType}
+        <if test="name!=null and name!=''">
+            and d.`name` like CONCAT('%', #{name}, '%')
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.github.ylfjm.mapper.RoleMenuMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into system_role__menu (
+        role_id,
+        menu_id
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.roleId},
+            #{item.menuId}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectMenuIdsByRoleId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select distinct menu_id from system_role__menu where 1 = 1
+        <if test="roleId != null">
+            and role_id = #{roleId}
+        </if>
+    </select>
+</mapper>

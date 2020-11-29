@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.github.ylfjm.mapper.PermissionMapper">
+
+    <select id="page" resultType="com.github.ylfjm.pojo.po.Permission">
+        select
+        p.id,
+        p.`name`,
+        p.method,
+        p.code,
+        p.menu_id,
+        p.sys_type,
+        p.creator,
+        p.create_time,
+        p.updater,
+        p.update_time,
+        m.`name` as menuName
+        from system_permission p
+        left join system_menu m on p.menu_id = m.id
+        where p.sys_type = #{sysType}
+        <if test="menuIdList!=null and menuIdList.size>0">
+            and p.menu_id in
+            <foreach collection="menuIdList" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="name!=null and name!=''">
+            and p.`name` like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="code!=null and code!=''">
+            and p.`code` like CONCAT('%', #{code}, '%')
+        </if>
+    </select>
+
+    <select id="selectBySysType" resultType="com.github.ylfjm.pojo.dto.PermissionCacheDTO">
+        select distinct
+            code,
+            method
+        from
+            system_permission
+        where
+            sys_type = #{sysType}
+    </select>
+
+    <select id="selectCodeAndMethodByRoleId" resultType="com.github.ylfjm.pojo.dto.PermissionCacheDTO">
+        select distinct
+        p.code,
+        p.method
+        from system_permission p
+        inner join system_role__permission rp on p.id = rp.permission_id
+        where rp.role_id = #{roleId}
+    </select>
+
+    <select id="selectIdByMenuId" resultType="java.lang.Integer">
+        select id from system_permission where menu_id = #{menuId}
+    </select>
+
+    <!--<select id="selectPermissionByMenuId" resultType="com.github.ylfjm.user.po.Permission">
+        SELECT DISTINCT
+        p.id as id,
+        p.name as name,
+        p.code as code,
+        p.method as method,
+        p.menu_id as menuId,
+        p.creator as creator,
+        p.create_time as createTime,
+        p.updater as updater,
+        p.update_time as updateTime
+        FROM
+        system_permission p
+        INNER JOIN system_role__permission rp ON p.id = rp.permission_id
+        INNER JOIN system_role__menu rm ON rp.role_id = rm.role_id
+        WHERE 1 = 1
+        <if test="menuId != null">
+            and rm.menu_id = #{menuId}
+        </if>
+    </select>-->
+
+</mapper>
