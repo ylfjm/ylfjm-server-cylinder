@@ -4,12 +4,15 @@ import com.github.ylfjm.common.JwtTokenException;
 import com.github.ylfjm.common.constant.AuthConstant;
 import com.github.ylfjm.common.jwt.JwtHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,9 +59,11 @@ public class RequestInterceptor extends HandlerInterceptorAdapter {
         } catch (Exception e) {
             if (e instanceof JwtTokenException) {
                 log.error("------JwtTokenException------" + e.getMessage());
+                this.doResponse(response, e.getMessage());
                 return false;
             } else {
                 log.error("------其它Exception------" + e.getMessage());
+                this.doResponse(response, "操作失败【code=50001】");
                 return false;
             }
         } finally {
@@ -78,6 +83,15 @@ public class RequestInterceptor extends HandlerInterceptorAdapter {
             return request.getParameter(AuthConstant.ADMIN_TOKEN);
         }
         return token;
+    }
+
+    /**
+     * 用户权限认证失败，返回无权操作
+     */
+    private void doResponse(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.getWriter().write(message);
     }
 
 }
