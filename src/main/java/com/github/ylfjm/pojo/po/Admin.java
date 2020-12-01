@@ -1,8 +1,8 @@
 package com.github.ylfjm.pojo.po;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,7 +22,7 @@ import java.util.Set;
 @Table(name = "system_admin")
 @Getter
 @Setter
-@ToString
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class Admin {
 
     @Id

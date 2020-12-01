@@ -11,12 +11,6 @@ spring:
       jdbc-url: jdbc:mysql://localhost:3333/ylfjm-cyl?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
       username: root
       password: 123456
-  jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
-    time-zone: GMT+8
-    default-property-inclusion: non_null
-#logging:
-#  config: classpath:logback-spring.xml
 mybatis:
   type-aliases-package: com.github.ylfjm.**.po
   mapper-locations: classpath:mapper/*.xml

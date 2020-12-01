@@ -1,5 +1,6 @@
 package com.github.ylfjm.pojo.po;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +20,7 @@ import java.util.Date;
 @Table(name = "system_department")
 @Getter
 @Setter
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class Department {
 
     @Id

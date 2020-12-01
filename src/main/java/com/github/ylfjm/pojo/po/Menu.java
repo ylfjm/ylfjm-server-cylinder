@@ -1,5 +1,6 @@
 package com.github.ylfjm.pojo.po;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +21,7 @@ import java.util.List;
 @Table(name = "system_menu")
 @Getter
 @Setter
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class Menu {
 
     @Id
