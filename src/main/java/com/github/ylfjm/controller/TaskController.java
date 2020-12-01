@@ -4,6 +4,7 @@ import com.github.ylfjm.common.pojo.vo.PageVO;
 import com.github.ylfjm.pojo.po.Task;
 import com.github.ylfjm.service.TaskService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +35,16 @@ public class TaskController {
     @PostMapping(value = "/task")
     public void add(@RequestBody Task task) {
         taskService.add(task);
+    }
+
+    /**
+     * 删除任务
+     *
+     * @param id 任务ID
+     */
+    @DeleteMapping(value = "/task/{id}")
+    public void delete(@PathVariable Integer id) {
+        taskService.delete(id);
     }
 
     /**

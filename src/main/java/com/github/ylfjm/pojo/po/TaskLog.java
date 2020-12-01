@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import java.util.Date;
 
 /**
- * 描述：开发任务日志
+ * 描述：任务日志
  *
  * @Author Zhang Bo
  * @Date 2020/11/15
@@ -25,7 +25,7 @@ public class TaskLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    //任务描述
+    //任务日志描述
     private String content;
     //由谁创建
     private String createBy;

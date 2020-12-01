@@ -52,7 +52,6 @@ public class MenuService {
      * @param menu 菜单信息
      */
     public void add(Menu menu) {
-        menu.setSysType(UserCache.getJWTInfo().getType());
         if (!StringUtils.hasText(menu.getName())) {
             throw new BadRequestException("操作失败，菜单名不能为空");
         }
@@ -67,18 +66,16 @@ public class MenuService {
             if (Objects.isNull(parent)) {
                 throw new BadRequestException("操作失败，父级菜单不存在或已被删除");
             }
+            if (parent.getLevel() > 1) {
+                throw new BadRequestException("操作失败，只支持创建一级或二级菜单");
+            }
             // 设置菜单层级
             menu.setLevel(parent.getLevel() + 1);
         }
-        // 一级菜单图标为必填，其它为非必填
-        // if (menu.getLevel() == 1 && !StringUtils.hasText(menu.getIcon())) {
-        //     throw new BadRequestException("操作失败，一级菜单图标不能为空");
-        // }
         Menu query = new Menu();
         query.setName(menu.getName());
         // 同一个父级菜单下的子菜单名称不能相同，不同父级菜单下的子菜单可以同名
         query.setPid(menu.getPid());
-        query.setSysType(menu.getSysType());
         int count = menuMapper.selectCount(query);
         if (count > 0) {
             throw new BadRequestException("操作失败，同一个父级菜单下子菜单名不能重复");
@@ -109,10 +106,6 @@ public class MenuService {
         Menu menu = menuMapper.selectByPrimaryKey(id);
         if (menu == null) {
             throw new NotFoundException("操作失败，菜单不存在或已被删除");
-        }
-        Integer sysType = UserCache.getJWTInfo().getType();
-        if (!Objects.equals(menu.getSysType(), sysType)) {
-            throw new BadRequestException("非法操作");
         }
         int result = menuMapper.deleteByPrimaryKey(id);
         if (result < 1) {
@@ -156,10 +149,6 @@ public class MenuService {
         if (record == null) {
             throw new BadRequestException("操作失败，菜单不存在或已被删除");
         }
-        Integer sysType = UserCache.getJWTInfo().getType();
-        if (!Objects.equals(record.getSysType(), sysType)) {
-            throw new BadRequestException("非法操作");
-        }
         if (menu.getPid() == null || menu.getPid() == 0) {
             menu.setPid(0);
             menu.setLevel(1);//一级菜单
@@ -168,13 +157,12 @@ public class MenuService {
             if (Objects.isNull(parent)) {
                 throw new YlfjmException("操作失败，父级菜单不存在或已被删除");
             }
+            if (parent.getLevel() > 1) {
+                throw new BadRequestException("操作失败，只支持创建一级或二级菜单");
+            }
             // 设置菜单层级
             menu.setLevel(parent.getLevel() + 1);
         }
-        // 一级菜单图标为必填，其它为非必填
-        // if (menu.getLevel() == 1 && !StringUtils.hasText(menu.getIcon())) {
-        //     throw new BadRequestException("操作失败，一级菜单图标不能为空");
-        // }
         // 校验菜单名称是否已经存在
         Example example = new Example(Menu.class);
         Example.Criteria criteria = example.createCriteria();
@@ -182,7 +170,6 @@ public class MenuService {
         // 同一个父级菜单下的子菜单名称不能相同，不同父级菜单下的子菜单可以同名
         criteria.andEqualTo("name", menu.getName());
         criteria.andEqualTo("pid", menu.getPid());
-        criteria.andEqualTo("sysType", record.getSysType());
         int count = menuMapper.selectCountByExample(example);
         if (count > 0) {
             throw new BadRequestException("操作失败，同一个父级菜单下子菜单名不能重复");
@@ -192,15 +179,12 @@ public class MenuService {
         Example.Criteria criteria2 = example2.createCriteria();
         criteria2.andNotEqualTo("id", menu.getId());
         criteria2.andEqualTo("url", menu.getUrl());
-        criteria2.andEqualTo("sysType", record.getSysType());
         count = menuMapper.selectCountByExample(example2);
         if (count > 0) {
             throw new BadRequestException("操作失败，菜单URL已存在");
         }
         menu.setUpdater(UserCache.getCurrentAdminRealName());
         menu.setUpdateTime(new Date());
-        // 不更新sysType
-        menu.setSysType(null);
         menuMapper.updateByPrimaryKeySelective(menu);
     }
 
@@ -213,7 +197,7 @@ public class MenuService {
     public PageVO<Menu> page(Integer pageNum, Integer pageSize, Integer pid, String name, Integer level) {
         // 分页查询
         PageHelper.startPage(pageNum, pageSize);
-        Page<Menu> page = menuMapper.page(UserCache.getJWTInfo().getType(), pid, name, level);
+        Page<Menu> page = menuMapper.page(pid, name, level);
         return new PageVO<>(pageNum, page);
     }
 
@@ -221,21 +205,17 @@ public class MenuService {
      * 获取级联菜单结构
      */
     public List<Menu> listMenuTree(Integer roleId) {
-        Integer sysType = UserCache.getJWTInfo().getType();
-        List<Menu> allMenus = menuMapper.selectAllMenus(sysType);
+        List<Menu> allMenus = menuMapper.selectAllMenus();
         if (roleId != null) {
             // 当角色ID不为空时，设置该角色是否拥有该菜单访问权限
             Set<Integer> menuIds = roleMenuMapper.selectMenuIdsByRoleId(roleId);
             if (!CollectionUtils.isEmpty(menuIds)) {
                 for (Menu menu : allMenus) {
-                    if (menuIds.contains(menu.getId())) {
-                        menu.setHave(true);
-                    }
+                    menu.setHave(menuIds.contains(menu.getId()));
                 }
             }
         }
         // 获取该角色下所有菜单
-        // List<Menu> firstLevelMenus = menuMapper.selectFirstLevelMenus(sysType);
         List<Menu> firstLevelMenus = this.getFirstLevelMenuList(allMenus);
         // 为一级菜单设置子菜单准备递归
         for (Menu menu : firstLevelMenus) {
@@ -249,7 +229,6 @@ public class MenuService {
     /**
      * 递归组合子菜单逻辑
      *
-     * @param pid      父级菜单ID
      * @param allMenus 所有菜单集合
      */
     private List<Menu> getFirstLevelMenuList(List<Menu> allMenus) {
@@ -300,11 +279,10 @@ public class MenuService {
     /**
      * 获取所有子菜单ID（包含自己）
      *
-     * @param sysType 系统分类
-     * @param menuId  父级菜单ID
+     * @param menuId 父级菜单ID
      */
-    public List<Integer> getChildMenuIds(Integer sysType, Integer menuId) {
-        List<Menu> allMenus = menuMapper.selectAllMenus(sysType);
+    public List<Integer> getChildMenuIds(Integer menuId) {
+        List<Menu> allMenus = menuMapper.selectAllMenus();
         // 构建子菜单
         List<Integer> subMenus = new ArrayList<>();
         subMenus.add(menuId);
@@ -344,11 +322,10 @@ public class MenuService {
      * @param roleId 角色ID
      */
     public List<Menu> listMenuAndPermission(Integer roleId) {
-        Integer sysType = UserCache.getJWTInfo().getType();
         // 获取所有菜单列表（每个菜单中携带对应的权限列表）
-        List<Menu> menus = menuMapper.selectMenuWithPermission(sysType);
+        List<Menu> menus = menuMapper.selectMenuWithPermission();
         // 获取一共有几级菜单
-        Integer maxLevel = menuMapper.selectMaxMenuLevel(sysType);
+        Integer maxLevel = menuMapper.selectMaxMenuLevel();
 
         // 获取该角色对应的所有权限
         Set<Integer> permissionIds = rolePermissionMapper.selectPermissionIdsByRoleId(roleId);
@@ -359,12 +336,14 @@ public class MenuService {
             for (int i = 1; i <= maxLevel; i++) {
                 map.put(i, new ArrayList<>());
                 for (Menu menu : menus) {
+                    menu.setHave(false);
                     if (menu.getLevel() == i) {
                         map.get(i).add(menu);
                     }
                     // 菜单的权限列表不为空 && 角色拥有的权限列表不为空
                     if (!CollectionUtils.isEmpty(menu.getPermissions()) && !CollectionUtils.isEmpty(permissionIds)) {
                         for (Permission permission : menu.getPermissions()) {
+                            permission.setHave(false);
                             // 判断菜单的权限是否被包含在角色拥有的权限列表中，如果被包含，则设置个标识（前端展示用到）
                             if (permissionIds.contains(permission.getId())) {
                                 // 表示该角色拥有该权限

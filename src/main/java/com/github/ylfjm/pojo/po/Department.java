@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 部门
@@ -27,7 +28,6 @@ public class Department {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;//部门名称
-    private Integer sysType;//所属系统：2-翼猫业务管理系统；3-净水设备互动广告系统；
 
     private String creator;
     private Date createTime;
@@ -35,6 +35,6 @@ public class Department {
     private Date updateTime;
 
     @Transient
-    private Integer accountCount;//所属该部门的管理员账号数量
+    private List<Admin> userList;
 
 }

@@ -58,6 +58,16 @@ public class RoleController {
     }
 
     /**
+     * 更新角色用户
+     *
+     * @param role 角色信息
+     */
+    @PutMapping(value = "/roleUser")
+    public void updateRoleUser(@RequestBody Role role) {
+        roleService.updateRoleUser(role, role.getUserIds());
+    }
+
+    /**
      * 更新角色菜单
      *
      * @param role 角色信息

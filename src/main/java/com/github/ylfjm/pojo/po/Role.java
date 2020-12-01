@@ -29,7 +29,6 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;//角色名称
-    private Integer sysType;//所属系统：2-翼猫业务管理系统；3-净水设备互动广告系统；
 
     private String creator;
     private Date createTime;
@@ -37,7 +36,7 @@ public class Role {
     private Date updateTime;
 
     @Transient
-    private Integer accountCount;//拥有该角色的管理员账号数量
+    private Set<Integer> userIds;//用户ID集合
     @Transient
     private Set<Integer> menuIds;//菜单ID集合
     @Transient

@@ -53,17 +53,15 @@ public class RoleService {
     /**
      * 创建角色信息
      *
-     * @param role          角色信息
+     * @param role 角色信息
      */
     @Transactional(rollbackFor = Exception.class)
     public void add(Role role) {
-        role.setSysType(UserCache.getJWTInfo().getType());
         if (!StringUtils.hasText(role.getName())) {
             throw new BadRequestException("操作失败，角色名不能为空");
         }
         Role query = new Role();
         query.setName(role.getName());
-        query.setSysType(role.getSysType());
         int count = roleMapper.selectCount(query);
         if (count > 0) {
             throw new BadRequestException("操作失败，角色已存在");
@@ -87,10 +85,6 @@ public class RoleService {
         Role role = roleMapper.selectByPrimaryKey(id);
         if (role == null) {
             throw new NotFoundException("操作失败，角色不存在或已被删除");
-        }
-        Integer sysType = UserCache.getJWTInfo().getType();
-        if (!Objects.equals(role.getSysType(), sysType)) {
-            throw new BadRequestException("非法操作");
         }
         // 角色有没有关联的用户，如果有不能删除
         AdminRole query = new AdminRole();
@@ -133,26 +127,40 @@ public class RoleService {
         if (record == null) {
             throw new BadRequestException("操作失败，角色不存在或已被删除");
         }
-        Integer sysType = UserCache.getJWTInfo().getType();
-        if (!Objects.equals(record.getSysType(), sysType)) {
-            throw new BadRequestException("非法操作");
-        }
         Example example = new Example(Role.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andNotEqualTo("id", role.getId());
         criteria.andEqualTo("name", role.getName());
-        criteria.andEqualTo("sysType", record.getSysType());
         int count = roleMapper.selectCountByExample(example);
         if (count > 0) {
             throw new BadRequestException("操作失败，角色已存在");
         }
         role.setUpdater(UserCache.getCurrentAdminRealName());
         role.setUpdateTime(new Date());
-        // 不更新sysType
-        role.setSysType(null);
         int result = roleMapper.updateByPrimaryKeySelective(role);
         if (result < 1) {
             throw new YlfjmException("操作失败，修改角色发生错误");
+        }
+    }
+
+    /**
+     * 更新角色用户
+     *
+     * @param role    角色信息
+     * @param userIds 用户ID集合
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateRoleUser(Role role, Set<Integer> userIds) {
+        if (Objects.isNull(role.getId())) {
+            throw new BadRequestException("操作失败，请选择角色");
+        }
+        Role record = roleMapper.selectByPrimaryKey(role.getId());
+        if (record == null) {
+            throw new BadRequestException("操作失败，角色不存在或已被删除");
+        }
+        // 为角色绑定权限
+        if (!CollectionUtils.isEmpty(userIds)) {
+            this.addUsers(role.getId(), userIds);
         }
     }
 
@@ -210,8 +218,31 @@ public class RoleService {
     public PageVO<Role> page(int pageNum, int pageSize, String name) {
         // 分页查询
         PageHelper.startPage(pageNum, pageSize);
-        Page<Role> page = roleMapper.page(name, UserCache.getJWTInfo().getType());
+        Page<Role> page = roleMapper.page(name);
         return new PageVO<>(pageNum, page);
+    }
+
+    /**
+     * 为角色添加用户
+     *
+     * @param roleId  角色ID
+     * @param userIds 用户ID集合
+     */
+    private void addUsers(Integer roleId, Set<Integer> userIds) {
+        // 2-删除旧的角色-用户关联数据
+        AdminRole adminRole = new AdminRole();
+        adminRole.setRoleId(roleId);
+        adminRoleMapper.delete(adminRole);
+        // 4-新增新的角色-用户关联数据
+        List<AdminRole> adminRoleList = new ArrayList<>();
+        for (Integer adminId : userIds) {
+            adminRole = new AdminRole();
+            adminRole.setRoleId(roleId);
+            adminRole.setAdminId(adminId);
+            adminRoleList.add(adminRole);
+        }
+        // 批量插入角色用户映射
+        adminRoleMapper.batchInsert(adminRoleList);
     }
 
     /**
@@ -221,17 +252,12 @@ public class RoleService {
      * @param menuIds 菜单ID集合
      */
     private void addMenus(Integer roleId, Set<Integer> menuIds) {
-        Role role = roleMapper.selectByPrimaryKey(roleId);
-        if (role == null) {
-            throw new BadRequestException("操作失败，角色不存在或已被删除");
-        }
         // 2-删除旧的角色-菜单关联数据
         RoleMenu roleMenu = new RoleMenu();
         roleMenu.setRoleId(roleId);
         roleMenuMapper.delete(roleMenu);
         // 4-新增新的角色-菜单关联数据
-        Integer sysType = UserCache.getJWTInfo().getType();
-        List<Menu> allMenus = menuMapper.selectAllMenus(sysType);
+        List<Menu> allMenus = menuMapper.selectAllMenus();
         for (Menu menu : allMenus) {
             if (menuIds.contains(menu.getId())) {
                 Integer pid = menu.getPid();
@@ -262,10 +288,6 @@ public class RoleService {
      * @param permissionIds 权限ID集合
      */
     private void addPermissions(Integer roleId, Set<Integer> permissionIds) {
-        Role role = roleMapper.selectByPrimaryKey(roleId);
-        if (role == null) {
-            throw new BadRequestException("操作失败，角色不存在或已被删除");
-        }
         // 1-删除旧的角色-权限关联数据
         RolePermission rolePermission = new RolePermission();
         rolePermission.setRoleId(roleId);

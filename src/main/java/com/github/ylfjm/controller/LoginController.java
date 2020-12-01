@@ -35,20 +35,17 @@ public class LoginController {
      *
      * @param userName 用户名
      * @param password 密码
-     * @param sysType  登录系统类型
      */
     @PostMapping(value = "/login")
     public Admin login(@RequestParam("userName") String userName,
                        @RequestParam("password") String password,
-                       @RequestParam("sysType") Integer sysType,
                        HttpServletRequest request, HttpServletResponse response) {
         String ip = IpUtil.getIp(request);
-        Admin admin = adminService.login(userName, password, sysType, ip);
+        Admin admin = adminService.login(userName, password, ip);
         JWTInfo jwtInfo = new JWTInfo();
         jwtInfo.setId(admin.getId());
         jwtInfo.setAccount(admin.getUserName());
         jwtInfo.setRealName(admin.getRealName());
-        jwtInfo.setType(sysType);
         String jwtToken = JwtHelper.createJWTToken(jwtInfo);
         response.setHeader(AuthConstant.ADMIN_TOKEN, jwtToken);
         return admin;

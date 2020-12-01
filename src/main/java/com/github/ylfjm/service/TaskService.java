@@ -3,6 +3,7 @@ package com.github.ylfjm.service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.ylfjm.common.BadRequestException;
+import com.github.ylfjm.common.NotFoundException;
 import com.github.ylfjm.common.YlfjmException;
 import com.github.ylfjm.common.cache.UserCache;
 import com.github.ylfjm.common.pojo.vo.PageVO;
@@ -37,7 +38,7 @@ public class TaskService {
      *
      * @param task 任务
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void add(Task task) {
         Date now = new Date();
         //校验
@@ -49,11 +50,31 @@ public class TaskService {
         if (result < 1) {
             throw new YlfjmException("操作失败，创建任务发生错误");
         }
-        TaskLog taskLog = new TaskLog();
-        taskLog.setContent("创建");
-        taskLog.setCreateBy(UserCache.getAccount());
-        taskLog.setCreateDate(now);
-        taskLogMapper.insert(taskLog);
+        this.addTaskLog("创建", now);
+    }
+
+    /**
+     * 删除任务
+     *
+     * @param id 任务ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(Integer id) {
+        Date now = new Date();
+        Task task = taskMapper.selectByPrimaryKey(id);
+        if (task == null) {
+            throw new NotFoundException("操作失败，任务不存在或已被删除");
+        }
+        Task update = new Task();
+        update.setId(id);
+        update.setDeleted(true);
+        update.setLastEditedBy(UserCache.getAccount());
+        update.setLastEditedDate(now);
+        int result = taskMapper.updateByPrimaryKeySelective(update);
+        if (result < 1) {
+            throw new YlfjmException("操作失败，删除任务发生错误");
+        }
+        this.addTaskLog("删除", now);
     }
 
     /**
@@ -61,7 +82,7 @@ public class TaskService {
      *
      * @param task 任务
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void update(Task task) {
         Date now = new Date();
         if (task.getId() == null) {
@@ -79,11 +100,7 @@ public class TaskService {
         if (result < 1) {
             throw new YlfjmException("操作失败，修改任务发生错误");
         }
-        TaskLog taskLog = new TaskLog();
-        taskLog.setContent("修改");
-        taskLog.setCreateBy(UserCache.getAccount());
-        taskLog.setCreateDate(now);
-        taskLogMapper.insert(taskLog);
+        this.addTaskLog("修改", now);
     }
 
     /**
@@ -143,4 +160,14 @@ public class TaskService {
         task.setLastEditedDate(now);
     }
 
+    /**
+     * 添加任务日志
+     */
+    private void addTaskLog(String content, Date createdate) {
+        TaskLog taskLog = new TaskLog();
+        taskLog.setContent(content);
+        taskLog.setCreateBy(UserCache.getAccount());
+        taskLog.setCreateDate(createdate);
+        taskLogMapper.insert(taskLog);
+    }
 }

@@ -35,13 +35,13 @@ public class PermissionInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
         //1-获取所有权限列表
-        Set<PermissionCacheDTO> permissionList = PermissionCacheHelper.getPList(SystemType.SYSTEM.getValue());
+        Set<PermissionCacheDTO> permissionList = PermissionCacheHelper.getPList();
         if (CollectionUtils.isEmpty(permissionList)) {
-            permissionList = permissionService.getPermissionList(SystemType.SYSTEM.getValue(), null);
+            permissionList = permissionService.getPermissionList(null);
             if (CollectionUtils.isEmpty(permissionList)) {
                 return true;
             }
-            PermissionCacheHelper.setPList(SystemType.SYSTEM.getValue(), permissionList);
+            PermissionCacheHelper.setPList(permissionList);
         }
         //2-获取当前接口的信息
         HandlerMethod handlerMethod = (HandlerMethod) handler;
@@ -69,7 +69,7 @@ public class PermissionInterceptor extends HandlerInterceptorAdapter {
         //5-权限校验
         Integer adminId = UserCache.getId();
         // 获取用户的权限列表
-        Set<PermissionCacheDTO> permissions = permissionService.getPermissionList(SystemType.SYSTEM.getValue(), adminId);
+        Set<PermissionCacheDTO> permissions = permissionService.getPermissionList(adminId);
         if (CollectionUtils.isEmpty(permissions)) {
             throw new BadRequestException("操作失败，您没有此操作权限");
         }

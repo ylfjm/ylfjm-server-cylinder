@@ -26,4 +26,11 @@ public interface AdminRoleMapper extends Mapper<AdminRole> {
      * @param adminId 管理员ID
      */
     Set<Integer> selectRoleIdsByAdminId(@Param("adminId") Integer adminId);
+
+    /**
+     * 根据角色ID获取管理员ID集合
+     *
+     * @param roleId 角色ID
+     */
+    Set<Integer> selectAdminIdsByRoleId(@Param("roleId") Integer roleId);
 }

@@ -31,13 +31,9 @@ public class Admin {
     private String userName;//用户名
     private String password;//密码
     private String realName;//姓名
-    private Integer sex;//性别：1-男，2-女
-    private String phone;//电话
-    private String email;//邮箱
     private Integer deptId;//部门ID
     private String remark;//备注
     private Boolean forbidden;//是否禁用：1-是，0-否
-    private Integer sysType;//所属系统：2-翼猫业务管理系统；3-净水设备互动广告系统；
 
     private String creator;//创建人
     private Date createTime;//创建时间
@@ -46,6 +42,8 @@ public class Admin {
 
     @Transient
     private String deptName;//部门名称
+    @Transient
+    private Boolean have;//标识是否是某角色
     @Transient
     private Set<Integer> roleIds;//角色ID集合
     @Transient

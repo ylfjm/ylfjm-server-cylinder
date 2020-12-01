@@ -11,6 +11,6 @@ import tk.mybatis.mapper.common.Mapper;
  */
 public interface RoleMapper extends Mapper<Role> {
 
-    Page<Role> page(@Param("name") String name, @Param("sysType") Integer sysType);
+    Page<Role> page(@Param("name") String name);
 
 }

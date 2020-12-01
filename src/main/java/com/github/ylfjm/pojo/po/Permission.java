@@ -30,7 +30,6 @@ public class Permission {
     private String code;
     private String method;
     private Integer menuId;
-    private Integer sysType;//所属系统：2-翼猫业务管理系统；3-净水设备互动广告系统；
 
     private String creator;
     private Date createTime;

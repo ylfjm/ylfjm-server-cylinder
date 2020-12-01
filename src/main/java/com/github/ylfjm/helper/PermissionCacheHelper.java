@@ -21,12 +21,12 @@ public class PermissionCacheHelper {
     private static Map<String, Set<PermissionCacheDTO>> rMap = new HashMap<>();
 
 
-    public static Set<PermissionCacheDTO> getPList(Integer suffix) {
-        return pMap.get(P_CACHE + suffix);
+    public static Set<PermissionCacheDTO> getPList() {
+        return pMap.get(P_CACHE);
     }
 
-    public static Set<PermissionCacheDTO> setPList(Integer suffix, Set<PermissionCacheDTO> permissions) {
-        return pMap.put(P_CACHE + suffix, permissions);
+    public static Set<PermissionCacheDTO> setPList(Set<PermissionCacheDTO> permissions) {
+        return pMap.put(P_CACHE, permissions);
     }
 
     public static Set<PermissionCacheDTO> getRList(Integer suffix) {

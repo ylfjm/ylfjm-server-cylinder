@@ -6,14 +6,12 @@ import com.github.ylfjm.common.BadRequestException;
 import com.github.ylfjm.common.NotFoundException;
 import com.github.ylfjm.common.YlfjmException;
 import com.github.ylfjm.common.cache.UserCache;
-import com.github.ylfjm.common.enums.SexType;
 import com.github.ylfjm.common.pojo.vo.PageVO;
 import com.github.ylfjm.mapper.AdminLogMapper;
 import com.github.ylfjm.mapper.AdminMapper;
 import com.github.ylfjm.mapper.AdminRoleMapper;
 import com.github.ylfjm.mapper.DepartmentMapper;
 import com.github.ylfjm.mapper.MenuMapper;
-import com.github.ylfjm.mapper.PermissionMapper;
 import com.github.ylfjm.pojo.po.Admin;
 import com.github.ylfjm.pojo.po.AdminLog;
 import com.github.ylfjm.pojo.po.AdminRole;
@@ -48,7 +46,6 @@ public class AdminService {
     private final MenuService menuService;
     private final MenuMapper menuMapper;
     private final DepartmentMapper departmentMapper;
-    private final PermissionMapper permissionMapper;
     private final AdminRoleMapper adminRoleMapper;
 
     /**
@@ -56,12 +53,11 @@ public class AdminService {
      *
      * @param userName 用户名
      * @param password 密码
-     * @param sysType  所属系统
      */
-    public Admin login(String userName, String password, Integer sysType, String ip) {
+    @Transactional(rollbackFor = Exception.class)
+    public Admin login(String userName, String password, String ip) {
         Admin query = new Admin();
         query.setUserName(userName);
-        query.setSysType(sysType);
         Admin admin = adminMapper.selectOne(query);
         if (admin == null) {
             throw new RuntimeException("登录失败，该用户不存在");
@@ -113,7 +109,6 @@ public class AdminService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void add(Admin admin, Set<Integer> roleIds) {
-        admin.setSysType(UserCache.getJWTInfo().getType());
         // 参数校验
         this.checkParams(admin, roleIds);
         // 校验密码
@@ -123,7 +118,6 @@ public class AdminService {
         // 校验用户名是否已被使用
         Admin query = new Admin();
         query.setUserName(admin.getUserName());
-        query.setSysType(admin.getSysType());
         int count = adminMapper.selectCount(query);
         if (count > 0) {
             throw new BadRequestException("操作失败，用户名已存在");
@@ -154,10 +148,6 @@ public class AdminService {
         if (admin == null) {
             throw new NotFoundException("操作失败，用户不存在或已被删除");
         }
-        Integer sysType = UserCache.getJWTInfo().getType();
-        if (!Objects.equals(admin.getSysType(), sysType)) {
-            throw new BadRequestException("非法操作");
-        }
         adminMapper.deleteByPrimaryKey(id);
         AdminRole adminRole = new AdminRole();
         adminRole.setAdminId(id);
@@ -174,23 +164,14 @@ public class AdminService {
         if (admin == null) {
             throw new NotFoundException("操作失败，用户不存在或已被删除");
         }
-        Integer sysType = UserCache.getJWTInfo().getType();
-        if (!Objects.equals(admin.getSysType(), sysType)) {
-            throw new BadRequestException("非法操作");
-        }
         Admin update = new Admin();
         update.setId(admin.getId());
         // 设置更新人
         update.setUpdater(UserCache.getCurrentAdminRealName());
         // 设置更新时间
         update.setUpdateTime(new Date());
-        if (admin.getForbidden()) {
-            // 设置禁用状态为false
-            update.setForbidden(false);
-        } else {
-            // 设置禁用状态为true
-            update.setForbidden(true);
-        }
+        // 设置禁用状态
+        update.setForbidden(!admin.getForbidden());
         adminMapper.updateByPrimaryKeySelective(update);
     }
 
@@ -211,16 +192,11 @@ public class AdminService {
         if (record == null) {
             throw new BadRequestException("操作失败，用户不存在或已被删除");
         }
-        Integer sysType = UserCache.getJWTInfo().getType();
-        if (!Objects.equals(record.getSysType(), sysType)) {
-            throw new BadRequestException("非法操作");
-        }
         // 校验用户名是否已被使用
         Example example = new Example(Admin.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andNotEqualTo("id", admin.getId());
         criteria.andEqualTo("userName", admin.getUserName());
-        criteria.andEqualTo("sysType", record.getSysType());
         int count = adminMapper.selectCountByExample(example);
         if (count > 0) {
             throw new BadRequestException("操作失败，该用户名已存在");
@@ -233,8 +209,6 @@ public class AdminService {
         admin.setUpdater(UserCache.getCurrentAdminRealName());
         // 设置更新时间
         admin.setUpdateTime(new Date());
-        // 不更新sysType
-        admin.setSysType(null);
         int result = adminMapper.updateByPrimaryKeySelective(admin);
         if (result < 1) {
             throw new YlfjmException("操作失败，修改用户发生错误");
@@ -257,7 +231,7 @@ public class AdminService {
     public PageVO<Admin> page(int pageNum, int pageSize, Integer roleId, Integer deptId, String realName, Boolean forbidden) {
         // 分页查询
         PageHelper.startPage(pageNum, pageSize);
-        Page<Admin> page = adminMapper.selectWithRole(UserCache.getJWTInfo().getType(), roleId, deptId, realName, forbidden);
+        Page<Admin> page = adminMapper.selectWithRole(roleId, deptId, realName, forbidden);
         // PO对象转成DTO对象
         return new PageVO<>(pageNum, page);
     }
@@ -302,10 +276,6 @@ public class AdminService {
         // 校验姓名
         if (!StringUtils.hasText(admin.getRealName())) {
             throw new BadRequestException("操作失败，姓名不能为空");
-        }
-        // 校验性别
-        if (admin.getSex() == null || SexType.find(admin.getSex()) == null) {
-            throw new BadRequestException("操作失败，性别填写错误");
         }
         // 校验部门
         if (admin.getDeptId() == null) {

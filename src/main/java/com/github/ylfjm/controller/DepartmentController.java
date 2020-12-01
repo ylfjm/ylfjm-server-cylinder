@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * 部门
  *
@@ -70,5 +72,16 @@ public class DepartmentController {
                                    @RequestParam(value = "name", required = false) String name) {
         return departmentService.page(pageNum, pageSize, name);
     }
+
+    /**
+     * 查询部门列表，部门携带用户列表
+     *
+     * @param roleId 角色ID
+     */
+    @GetMapping(value = "/department/user")
+    public List<Department> listDepartment(@RequestParam(required = false) Integer roleId) {
+        return departmentService.listDepartment(roleId);
+    }
+
 
 }

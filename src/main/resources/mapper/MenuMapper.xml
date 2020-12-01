@@ -26,7 +26,7 @@
         updater,
         update_time
         from system_menu
-        where sys_type = #{sysType}
+        where 1=1
         <if test="pid != null">
             and pid = #{pid}
         </if>
@@ -48,10 +48,6 @@
         `level`,
         sorts
         from system_menu
-        where 1=1
-        <if test="sysType != null">
-            and sys_type = #{sysType}
-        </if>
         order by `level`,sorts
     </select>
 
@@ -67,29 +63,7 @@
 
     <!--获取一共有几级菜单-->
     <select id="selectMaxMenuLevel" resultType="java.lang.Integer">
-        select `level` from system_menu
-        where 1=1
-        <if test="sysType != null">
-            and sys_type = #{sysType}
-        </if>
-        order by `level` desc limit 1
-    </select>
-
-    <!--根据权限ID集合获取菜单集合-->
-    <select id="selectMenuBypermissionIds" parameterType="java.util.Set" resultType="com.github.ylfjm.pojo.po.Menu">
-        select distinct
-        m.id,
-        m.`name`,
-        m.pid,
-        m.`level`,
-        m.sorts
-        from system_menu m
-        inner join system_permission p on m.id = p.menu_id
-        where p.id in
-        <foreach collection="permissionIds" item="item" index="index" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        order by m.`level`,m.sorts
+        select `level` from system_menu order by `level` desc limit 1
     </select>
 
     <!--根据id查询pid-->
@@ -126,40 +100,6 @@
         `level`,
         sorts
         from system_menu
-        where 1=1
-        <if test="sysType != null">
-            and sys_type = #{sysType}
-        </if>
-        order by `level`,sorts
-    </select>
-
-    <!--获取所有菜单ID-->
-    <select id="selectAllMenuId" resultType="java.lang.Integer">
-        select distinct
-        id
-        from system_menu
-        where 1=1
-        <if test="sysType != null">
-            and sys_type = #{sysType}
-        </if>
-    </select>
-
-    <!--获取一级菜单列表-->
-    <select id="selectFirstLevelMenus" resultType="com.github.ylfjm.pojo.po.Menu">
-        select
-        id,
-        `name`,
-        description,
-        url,
-        icon,
-        pid,
-        `level`,
-        sorts
-        from system_menu
-        where `level` = 1 and (pid = 0 or pid is null)
-        <if test="sysType != null">
-            and sys_type = #{sysType}
-        </if>
         order by `level`,sorts
     </select>
 

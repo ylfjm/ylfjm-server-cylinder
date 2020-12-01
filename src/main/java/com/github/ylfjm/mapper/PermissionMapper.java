@@ -16,22 +16,19 @@ import java.util.Set;
 public interface PermissionMapper extends Mapper<Permission> {
 
     /**
-     * @param sysType    所属系统
      * @param menuIdList 菜单ID集合
      * @param name       权限名称
      * @param code       权限CODE
      */
-    Page<Permission> page(@Param("sysType") Integer sysType,
-                          @Param("menuIdList") List<Integer> menuIdList,
+    Page<Permission> page(@Param("menuIdList") List<Integer> menuIdList,
                           @Param("name") String name,
                           @Param("code") String code);
 
     /**
      * 根据系统类型获取权限列表
      *
-     * @param sysType 所属系统
      */
-    Set<PermissionCacheDTO> selectBySysType(@Param("sysType") Integer sysType);
+    Set<PermissionCacheDTO> selectForCache();
 
     /**
      * 根据角色ID获取角色拥有的权限列表
@@ -46,13 +43,5 @@ public interface PermissionMapper extends Mapper<Permission> {
      * @param menuId 菜单ID
      */
     List<Integer> selectIdByMenuId(@Param("menuId") Integer menuId);
-
-    // /**
-    //  * 根据菜单ID获取权限列表
-    //  *
-    //  * @param menuId 菜单ID
-    //  */
-
-    // Page<Permission> selectPermissionByMenuId(@Param("menuId") Integer menuId);
 
 }

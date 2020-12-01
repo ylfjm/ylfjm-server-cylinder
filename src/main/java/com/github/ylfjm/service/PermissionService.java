@@ -48,14 +48,12 @@ public class PermissionService {
      * @param permission 权限信息
      */
     public void add(Permission permission) {
-        permission.setSysType(UserCache.getJWTInfo().getType());
         // 参数校验
         this.checkParams(permission);
         Permission query = new Permission();
         query.setMethod(permission.getMethod());
         query.setCode(permission.getCode());
         query.setMenuId(permission.getMenuId());
-        query.setSysType(permission.getSysType());
         int count = permissionMapper.selectCount(query);
         if (count > 0) {
             throw new BadRequestException("操作失败，权限已存在");
@@ -70,8 +68,8 @@ public class PermissionService {
             throw new YlfjmException("操作失败，新增权限发生错误");
         }
         // 更新缓存
-        Set<PermissionCacheDTO> permissions = permissionMapper.selectBySysType(permission.getSysType());
-        PermissionCacheHelper.setPList(permission.getSysType(), permissions);
+        Set<PermissionCacheDTO> permissions = permissionMapper.selectForCache();
+        PermissionCacheHelper.setPList(permissions);
     }
 
     /**
@@ -85,10 +83,6 @@ public class PermissionService {
         if (permission == null) {
             throw new NotFoundException("操作失败，权限不存在或已被删除");
         }
-        Integer sysType = UserCache.getJWTInfo().getType();
-        if (!Objects.equals(permission.getSysType(), sysType)) {
-            throw new BadRequestException("非法操作");
-        }
         int result = permissionMapper.deleteByPrimaryKey(id);
         if (result < 1) {
             throw new YlfjmException("操作失败，删除权限发生错误");
@@ -98,8 +92,8 @@ public class PermissionService {
         rolePermission.setPermissionId(id);
         rolePermissionMapper.delete(rolePermission);
         // 更新缓存
-        Set<PermissionCacheDTO> permissions = permissionMapper.selectBySysType(sysType);
-        PermissionCacheHelper.setPList(sysType, permissions);
+        Set<PermissionCacheDTO> permissions = permissionMapper.selectForCache();
+        PermissionCacheHelper.setPList(permissions);
     }
 
     /**
@@ -117,10 +111,6 @@ public class PermissionService {
         if (record == null) {
             throw new BadRequestException("操作失败，权限不存在或已被删除");
         }
-        Integer sysType = UserCache.getJWTInfo().getType();
-        if (!Objects.equals(record.getSysType(), sysType)) {
-            throw new BadRequestException("非法操作");
-        }
         // 校验权限是否已存在
         Example example = new Example(Permission.class);
         Example.Criteria criteria = example.createCriteria();
@@ -128,7 +118,6 @@ public class PermissionService {
         criteria.andEqualTo("method", permission.getMethod());
         criteria.andEqualTo("code", permission.getCode());
         criteria.andEqualTo("menuId", permission.getMenuId());
-        criteria.andEqualTo("sysType", record.getSysType());
         int count = permissionMapper.selectCountByExample(example);
         if (count > 0) {
             throw new BadRequestException("操作失败，权限已存在");
@@ -137,12 +126,10 @@ public class PermissionService {
         permission.setUpdater(UserCache.getCurrentAdminRealName());
         // 设置更新时间
         permission.setUpdateTime(new Date());
-        // 不更新sysType
-        permission.setSysType(null);
         permissionMapper.updateByPrimaryKeySelective(permission);
         // 更新缓存
-        Set<PermissionCacheDTO> permissions = permissionMapper.selectBySysType(record.getSysType());
-        PermissionCacheHelper.setPList(record.getSysType(), permissions);
+        Set<PermissionCacheDTO> permissions = permissionMapper.selectForCache();
+        PermissionCacheHelper.setPList(permissions);
     }
 
     /**
@@ -153,14 +140,13 @@ public class PermissionService {
      * @param menuId   菜单ID
      */
     public PageVO<Permission> page(Integer pageNum, Integer pageSize, Integer menuId, String name, String code) {
-        Integer sysType = UserCache.getJWTInfo().getType();
         List<Integer> subMenuIdList = null;
         if (menuId != null) {
-            subMenuIdList = menuService.getChildMenuIds(sysType, menuId);
+            subMenuIdList = menuService.getChildMenuIds(menuId);
         }
         // 分页查询
         PageHelper.startPage(pageNum, pageSize);
-        Page<Permission> page = permissionMapper.page(sysType, subMenuIdList, name, code);
+        Page<Permission> page = permissionMapper.page(subMenuIdList, name, code);
         return new PageVO<>(pageNum, page);
     }
 
@@ -187,12 +173,11 @@ public class PermissionService {
     /**
      * 获取权限信息
      *
-     * @param sysType 所属系统
      * @param adminId 管理员ID
      */
-    public Set<PermissionCacheDTO> getPermissionList(Integer sysType, Integer adminId) {
+    public Set<PermissionCacheDTO> getPermissionList(Integer adminId) {
         if (adminId == null) {
-            return permissionMapper.selectBySysType(sysType);
+            return permissionMapper.selectForCache();
         } else {
             Set<Integer> roleIds = adminRoleMapper.selectRoleIdsByAdminId(adminId);
             if (CollectionUtils.isEmpty(roleIds)) {
@@ -212,14 +197,5 @@ public class PermissionService {
             return permissions;
         }
     }
-
-    // /**
-    //  * 根据菜单ID获取权限列表
-    //  *
-    //  * @param menuId 菜单ID
-    //  */
-    // public List<Permission> listByMenuId(Integer menuId) {
-    //     return permissionMapper.selectPermissionByMenuId(menuId);
-    // }
 
 }

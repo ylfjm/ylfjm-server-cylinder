@@ -17,9 +17,6 @@
         a.user_name,
         a.password,
         a.real_name,
-        a.sex,
-        a.phone,
-        a.email,
         a.dept_id,
         d.`name` as deptName,
         a.remark,
@@ -33,7 +30,7 @@
         <if test="roleId != null">
             inner join system_admin__role ar on a.id = ar.admin_id and ar.role_id = #{roleId}
         </if>
-        where a.sys_type = #{sysType}
+        where 1=1
         <if test="deptId != null">
             and a.dept_id = #{deptId}
         </if>

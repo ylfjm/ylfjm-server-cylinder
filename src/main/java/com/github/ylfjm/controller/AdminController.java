@@ -88,24 +88,4 @@ public class AdminController {
         return adminService.page(pageNum, pageSize, roleId, deptId, realName, forbidden);
     }
 
-    // /**
-    //  * 获取管理员所拥有的菜单
-    //  *
-    //  * @param id 管理员ID
-    //  */
-    // @GetMapping(value = "/admin/{id}/menus")
-    // public List<Menu> listMenus(@PathVariable Integer id) {
-    //     return adminService.listMenusByAdminId(id);
-    // }
-    //
-    // /**
-    //  * 获取管理员权限列表
-    //  *
-    //  * @param id 管理员ID
-    //  */
-    // @GetMapping(value = "/admin/{id}/permissions")
-    // public Set<PermissionCache> listPermissions(@PathVariable Integer id) {
-    //     return adminService.listPermissionsByAdminId(id);
-    // }
-
 }

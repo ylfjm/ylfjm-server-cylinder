@@ -18,7 +18,7 @@
         m.`name` as menuName
         from system_permission p
         left join system_menu m on p.menu_id = m.id
-        where p.sys_type = #{sysType}
+        where 1=1
         <if test="menuIdList!=null and menuIdList.size>0">
             and p.menu_id in
             <foreach collection="menuIdList" item="item" index="index" open="(" separator="," close=")">
@@ -33,14 +33,8 @@
         </if>
     </select>
 
-    <select id="selectBySysType" resultType="com.github.ylfjm.pojo.dto.PermissionCacheDTO">
-        select distinct
-            code,
-            method
-        from
-            system_permission
-        where
-            sys_type = #{sysType}
+    <select id="selectForCache" resultType="com.github.ylfjm.pojo.dto.PermissionCacheDTO">
+        select distinct code, method from system_permission
     </select>
 
     <select id="selectCodeAndMethodByRoleId" resultType="com.github.ylfjm.pojo.dto.PermissionCacheDTO">
@@ -55,26 +49,5 @@
     <select id="selectIdByMenuId" resultType="java.lang.Integer">
         select id from system_permission where menu_id = #{menuId}
     </select>
-
-    <!--<select id="selectPermissionByMenuId" resultType="com.github.ylfjm.user.po.Permission">
-        SELECT DISTINCT
-        p.id as id,
-        p.name as name,
-        p.code as code,
-        p.method as method,
-        p.menu_id as menuId,
-        p.creator as creator,
-        p.create_time as createTime,
-        p.updater as updater,
-        p.update_time as updateTime
-        FROM
-        system_permission p
-        INNER JOIN system_role__permission rp ON p.id = rp.permission_id
-        INNER JOIN system_role__menu rm ON rp.role_id = rm.role_id
-        WHERE 1 = 1
-        <if test="menuId != null">
-            and rm.menu_id = #{menuId}
-        </if>
-    </select>-->
 
 </mapper>

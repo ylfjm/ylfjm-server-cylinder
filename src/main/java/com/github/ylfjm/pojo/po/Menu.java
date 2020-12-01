@@ -30,11 +30,9 @@ public class Menu {
     private String name;
     private String description;
     private String url;
-    private String icon;//菜单图标
     private Integer pid;//父级菜单id
     private Integer level;//菜单层级
     private Integer sorts;//排序
-    private Integer sysType;//所属系统：2-翼猫业务管理系统；3-净水设备互动广告系统；
 
     private String creator;
     private Date createTime;

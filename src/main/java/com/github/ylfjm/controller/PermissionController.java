@@ -1,7 +1,6 @@
 package com.github.ylfjm.controller;
 
 import com.github.ylfjm.common.pojo.vo.PageVO;
-import com.github.ylfjm.pojo.dto.PermissionCacheDTO;
 import com.github.ylfjm.pojo.po.Permission;
 import com.github.ylfjm.service.PermissionService;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Set;
 
 /**
  * 权限
@@ -76,18 +73,6 @@ public class PermissionController {
                                    @RequestParam(required = false) String name,
                                    @RequestParam(required = false) String code) {
         return permissionService.page(pageNum, pageSize, menuId, name, code);
-    }
-
-    /**
-     * 获取权限信息
-     *
-     * @param sysType 所属系统
-     * @param adminId 管理员ID
-     */
-    @GetMapping(value = "/permissionList")
-    public Set<PermissionCacheDTO> getPermissionList(@RequestParam Integer sysType,
-                                                     @RequestParam(required = false) Integer adminId) {
-        return permissionService.getPermissionList(sysType, adminId);
     }
 
 }

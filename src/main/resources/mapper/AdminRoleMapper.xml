@@ -18,7 +18,11 @@
     </insert>
 
     <select id="selectRoleIdsByAdminId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
-        select role_id from system_admin__role where admin_id = #{adminId}
+        select distinct role_id from system_admin__role where admin_id = #{adminId}
+    </select>
+
+    <select id="selectAdminIdsByRoleId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select distinct admin_id from system_admin__role where role_id = #{roleId}
     </select>
 
 </mapper>

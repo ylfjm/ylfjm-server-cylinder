@@ -8,7 +8,7 @@
         r.id as role_id,
         r.`name`
         from system_role r
-        where r.sys_type = #{sysType}
+        where 1=1
         <if test="name!=null and name!=''">
             and r.`name` like CONCAT('%', #{name}, '%')
         </if>

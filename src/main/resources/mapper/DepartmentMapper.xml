@@ -3,20 +3,37 @@
 
 <mapper namespace="com.github.ylfjm.mapper.DepartmentMapper">
 
-    <select id="page" resultType="com.github.ylfjm.pojo.po.Department">
+    <select id="page" resultMap="userListByDeptId">
         select
-        d.id,
-        d.`name`,
-        d.creator,
-        d.create_time,
-        d.updater,
-        d.update_time,
-        (select count(1) from system_admin where dept_id = d.id and sys_type = #{sysType}) as accountCount
+        d.id as dept_id,
+        d.`name`
         from system_department d
-        where d.sys_type = #{sysType}
+        where 1=1
         <if test="name!=null and name!=''">
             and d.`name` like CONCAT('%', #{name}, '%')
         </if>
+    </select>
+
+    <resultMap id="userListByDeptId" type="com.github.ylfjm.pojo.po.Department">
+        <result column="dept_id" property="id" jdbcType="INTEGER"/>
+        <collection property="userList" ofType="com.github.ylfjm.pojo.po.Admin" select="selectAdminByDeptId" column="dept_id">
+            <result column="dept_id" property="deptId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectAdminByDeptId" parameterType="java.lang.Integer" resultType="com.github.ylfjm.pojo.po.Admin">
+        select
+        id,
+        real_name
+        from system_admin
+        where dept_id = #{dept_id}
+    </select>
+
+    <select id="list" resultMap="userListByDeptId">
+        select
+        d.id as dept_id,
+        d.`name`
+        from system_department d
     </select>
 
 </mapper>
