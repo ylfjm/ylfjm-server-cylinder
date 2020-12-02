@@ -58,6 +58,21 @@ public class TaskController {
     }
 
     /**
+     * 更新任务状态
+     *
+     * @param id        任务ID
+     * @param oldStatus 当前状态
+     * @param newStatus 更新后状态
+     */
+    @PutMapping(value = "/task/{id}")
+    public void update(@PathVariable Integer id,
+                       @RequestParam String oldStatus,
+                       @RequestParam String newStatus,
+                       @RequestParam(required = false) String closedReason) {
+        taskService.updateStatus(id, oldStatus, newStatus, closedReason);
+    }
+
+    /**
      * 查询任务列表
      *
      * @param id 任务ID

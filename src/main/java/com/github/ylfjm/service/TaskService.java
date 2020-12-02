@@ -11,6 +11,7 @@ import com.github.ylfjm.mapper.TaskLogMapper;
 import com.github.ylfjm.mapper.TaskMapper;
 import com.github.ylfjm.pojo.po.Task;
 import com.github.ylfjm.pojo.po.TaskLog;
+import com.github.ylfjm.pojo.po.TaskStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * 描述：TODO
@@ -46,6 +48,8 @@ public class TaskService {
         task.setId(null);
         task.setStatus("wait");
         task.setDeleted(false);
+        task.setOpenedBy(UserCache.getAccount());
+        task.setOpenedDate(now);
         int result = taskMapper.insertSelective(task);
         if (result < 1) {
             throw new YlfjmException("操作失败，创建任务发生错误");
@@ -101,6 +105,46 @@ public class TaskService {
             throw new YlfjmException("操作失败，修改任务发生错误");
         }
         this.addTaskLog("修改", now);
+    }
+
+    /**
+     * 更新任务状态
+     *
+     * @param id        任务ID
+     * @param oldStatus 当前状态
+     * @param newStatus 更新后状态
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStatus(Integer id, String oldStatus, String newStatus, String closedReason) {
+        Date now = new Date();
+        Task task = taskMapper.selectByPrimaryKey(id);
+        if (task == null) {
+            throw new NotFoundException("操作失败，任务不存在或已被删除");
+        }
+        if (!Objects.equals(task.getStatus(), oldStatus)) {
+            throw new NotFoundException("操作失败，任务状态已更新，请重试");
+        }
+        if (!TaskStatus.contains(oldStatus) || !TaskStatus.contains(newStatus)) {
+            throw new NotFoundException("操作失败，任务状态有误");
+        }
+        Task update = new Task();
+        update.setId(id);
+        update.setStatus(newStatus);
+        if (Objects.equals(newStatus, TaskStatus.cancel.name())) {
+            update.setCanceledBy(UserCache.getAccount());
+            update.setCanceledDate(now);
+        } else if (Objects.equals(newStatus, TaskStatus.closed.name())) {
+            update.setClosedBy(UserCache.getAccount());
+            update.setClosedDate(now);
+            update.setClosedReason(closedReason);
+        }
+        update.setLastEditedBy(UserCache.getAccount());
+        update.setLastEditedDate(now);
+        int result = taskMapper.updateByPrimaryKeySelective(update);
+        if (result < 1) {
+            throw new YlfjmException("操作失败，更新任务状态发生错误");
+        }
+        this.addTaskLog("更新任务状态", now);
     }
 
     /**
