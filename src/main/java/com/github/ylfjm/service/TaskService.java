@@ -44,7 +44,9 @@ public class TaskService {
     public void add(Task task) {
         Date now = new Date();
         //校验
-        this.check(task, now);
+        this.check(task);
+        this.setRequired(task);
+        this.setLastEdited(task, now);
         task.setId(null);
         task.setStatus("wait");
         task.setDeleted(false);
@@ -72,8 +74,7 @@ public class TaskService {
         Task update = new Task();
         update.setId(id);
         update.setDeleted(true);
-        update.setLastEditedBy(UserCache.getAccount());
-        update.setLastEditedDate(now);
+        this.setLastEdited(update, now);
         int result = taskMapper.updateByPrimaryKeySelective(update);
         if (result < 1) {
             throw new YlfjmException("操作失败，删除任务发生错误");
@@ -90,14 +91,16 @@ public class TaskService {
     public void update(Task task) {
         Date now = new Date();
         if (task.getId() == null) {
-            throw new BadRequestException("操作失败，请选择任务");
+            throw new BadRequestException("操作失败，缺少任务ID");
         }
         Task record = taskMapper.selectByPrimaryKey(task.getId());
         if (record == null) {
             throw new BadRequestException("操作失败，任务不存在或已被删除");
         }
         //校验
-        this.check(task, now);
+        this.check(task);
+        this.setRequired(task);
+        this.setLastEdited(task, now);
         task.setStatus(record.getStatus());
         task.setDeleted(record.getDeleted());
         int result = taskMapper.updateByPrimaryKey(task);
@@ -138,8 +141,7 @@ public class TaskService {
             update.setClosedDate(now);
             update.setClosedReason(closedReason);
         }
-        update.setLastEditedBy(UserCache.getAccount());
-        update.setLastEditedDate(now);
+        this.setLastEdited(update, now);
         int result = taskMapper.updateByPrimaryKeySelective(update);
         if (result < 1) {
             throw new YlfjmException("操作失败，更新任务状态发生错误");
@@ -147,8 +149,27 @@ public class TaskService {
         this.addTaskLog("更新任务状态", now);
     }
 
+    /**
+     * 指派
+     *
+     * @param task 任务信息
+     */
     public void assign(Task task) {
-
+        Date now = new Date();
+        if (task.getId() == null) {
+            throw new BadRequestException("操作失败，缺少任务ID");
+        }
+        Task record = taskMapper.selectByPrimaryKey(task.getId());
+        if (record == null) {
+            throw new BadRequestException("操作失败，任务不存在或已被删除");
+        }
+        this.setRequired(task);
+        this.setLastEdited(task, now);
+        int result = taskMapper.updateByPrimaryKeySelective(task);
+        if (result < 1) {
+            throw new YlfjmException("操作失败，指派开发时发生错误");
+        }
+        this.addTaskLog("指派", now);
     }
 
     /**
@@ -181,7 +202,7 @@ public class TaskService {
     /**
      * 校验
      */
-    private void check(Task task, Date now) {
+    private void check(Task task) {
         if (task.getProjectId() == null) {
             throw new BadRequestException("操作失败，请选择任务所属项目");
         }
@@ -197,6 +218,12 @@ public class TaskService {
         if (task.getDeadline() == null) {
             throw new BadRequestException("操作失败，请选择任务截止日期");
         }
+    }
+
+    /**
+     * 设置指派对象信息
+     */
+    private void setRequired(Task task) {
         task.setPdRequired(StringUtils.hasText(task.getPdDesigner()));
         task.setUiRequired(StringUtils.hasText(task.getUiDesigner()));
         task.setWebRequired(StringUtils.hasText(task.getWebDeveloper()));
@@ -204,12 +231,18 @@ public class TaskService {
         task.setIosRequired(StringUtils.hasText(task.getIosDeveloper()));
         task.setServerRequired(StringUtils.hasText(task.getServerDeveloper()));
         task.setTestRequired(StringUtils.hasText(task.getTester()));
+    }
+
+    /**
+     * 设置最后修改信息
+     */
+    private void setLastEdited(Task task, Date now) {
         task.setLastEditedBy(UserCache.getAccount());
         task.setLastEditedDate(now);
     }
 
     /**
-     * 添加任务日志
+     * 添加任务备注
      */
     private void addTaskLog(String content, Date createdate) {
         TaskLog taskLog = new TaskLog();
