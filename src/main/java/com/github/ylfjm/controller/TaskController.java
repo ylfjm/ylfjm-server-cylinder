@@ -73,7 +73,17 @@ public class TaskController {
     }
 
     /**
-     * 查询任务列表
+     * 任务指派
+     *
+     * @param task 任务信息
+     */
+    @PutMapping(value = "/task/assign")
+    public void assign(@RequestBody Task task) {
+        taskService.assign(task);
+    }
+
+    /**
+     * 查询任务
      *
      * @param id 任务ID
      */

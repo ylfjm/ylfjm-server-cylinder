@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Date;
 
 /**
@@ -119,5 +120,8 @@ public class Task {
     private Date testFinishedDate;
     //已删除(0-否,1-是)
     private Boolean deleted;
+
+    @Transient
+    private String remark;
 
 }

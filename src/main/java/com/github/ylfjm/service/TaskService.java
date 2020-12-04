@@ -147,6 +147,10 @@ public class TaskService {
         this.addTaskLog("更新任务状态", now);
     }
 
+    public void assign(Task task) {
+
+    }
+
     /**
      * 查询单个任务
      *
@@ -214,4 +218,5 @@ public class TaskService {
         taskLog.setCreateDate(createdate);
         taskLogMapper.insert(taskLog);
     }
+
 }
