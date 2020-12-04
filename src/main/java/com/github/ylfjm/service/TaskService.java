@@ -7,10 +7,10 @@ import com.github.ylfjm.common.NotFoundException;
 import com.github.ylfjm.common.YlfjmException;
 import com.github.ylfjm.common.cache.UserCache;
 import com.github.ylfjm.common.pojo.vo.PageVO;
-import com.github.ylfjm.mapper.TaskLogMapper;
+import com.github.ylfjm.mapper.TaskRemarkMapper;
 import com.github.ylfjm.mapper.TaskMapper;
 import com.github.ylfjm.pojo.po.Task;
-import com.github.ylfjm.pojo.po.TaskLog;
+import com.github.ylfjm.pojo.po.TaskRemark;
 import com.github.ylfjm.pojo.po.TaskStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -33,7 +34,7 @@ import java.util.Objects;
 public class TaskService {
 
     private final TaskMapper taskMapper;
-    private final TaskLogMapper taskLogMapper;
+    private final TaskRemarkMapper taskRemarkMapper;
 
     /**
      * 创建任务
@@ -56,7 +57,7 @@ public class TaskService {
         if (result < 1) {
             throw new YlfjmException("操作失败，创建任务发生错误");
         }
-        this.addTaskLog("创建", now);
+        this.addTaskRemark(task.getId(), 1, "创建", now);
     }
 
     /**
@@ -79,7 +80,7 @@ public class TaskService {
         if (result < 1) {
             throw new YlfjmException("操作失败，删除任务发生错误");
         }
-        this.addTaskLog("删除", now);
+        this.addTaskRemark(id, 1, "删除", now);
     }
 
     /**
@@ -107,7 +108,7 @@ public class TaskService {
         if (result < 1) {
             throw new YlfjmException("操作失败，修改任务发生错误");
         }
-        this.addTaskLog("修改", now);
+        this.addTaskRemark(task.getId(), 1, "编辑", now);
     }
 
     /**
@@ -146,7 +147,7 @@ public class TaskService {
         if (result < 1) {
             throw new YlfjmException("操作失败，更新任务状态发生错误");
         }
-        this.addTaskLog("更新任务状态", now);
+        this.addTaskRemark(id, 2, "更新任务状态【由'" + oldStatus + "'更新为'" + newStatus + "'】", now);
     }
 
     /**
@@ -163,13 +164,20 @@ public class TaskService {
         if (record == null) {
             throw new BadRequestException("操作失败，任务不存在或已被删除");
         }
-        this.setRequired(task);
-        this.setLastEdited(task, now);
-        int result = taskMapper.updateByPrimaryKeySelective(task);
+        record.setPdDesigner(task.getPdDesigner());
+        record.setUiDesigner(task.getUiDesigner());
+        record.setWebDeveloper(task.getWebDeveloper());
+        record.setAndroidDeveloper(task.getAndroidDeveloper());
+        record.setIosDeveloper(task.getIosDeveloper());
+        record.setServerDeveloper(task.getServerDeveloper());
+        record.setTester(task.getTester());
+        this.setRequired(record);
+        this.setLastEdited(record, now);
+        int result = taskMapper.updateByPrimaryKey(record);
         if (result < 1) {
             throw new YlfjmException("操作失败，指派开发时发生错误");
         }
-        this.addTaskLog("指派", now);
+        this.addTaskRemark(task.getId(), 2, task.getRemark(), now);
     }
 
     /**
@@ -197,6 +205,17 @@ public class TaskService {
         PageHelper.startPage(pageNum, pageSize);
         Page<Task> page = taskMapper.selectPage(status);
         return new PageVO<>(pageNum, page);
+    }
+
+    /**
+     * 查询任务备注列表
+     *
+     * @param taskId 任务ID
+     */
+    public List<TaskRemark> remarkList(Integer taskId) {
+        TaskRemark remark = new TaskRemark();
+        remark.setTaskId(taskId);
+        return taskRemarkMapper.select(remark);
     }
 
     /**
@@ -244,12 +263,18 @@ public class TaskService {
     /**
      * 添加任务备注
      */
-    private void addTaskLog(String content, Date createdate) {
-        TaskLog taskLog = new TaskLog();
-        taskLog.setContent(content);
-        taskLog.setCreateBy(UserCache.getAccount());
-        taskLog.setCreateDate(createdate);
-        taskLogMapper.insert(taskLog);
+    private void addTaskRemark(Integer taskId, int textType, String text, Date createdate) {
+        TaskRemark taskRemark = new TaskRemark();
+        taskRemark.setTaskId(taskId);
+        taskRemark.setTextType(textType);
+        if (textType == 1) {
+            taskRemark.setText(text);
+        } else {
+            taskRemark.setRichText(text);
+        }
+        taskRemark.setCreateBy(UserCache.getAccount());
+        taskRemark.setCreateDate(createdate);
+        taskRemarkMapper.insert(taskRemark);
     }
 
 }

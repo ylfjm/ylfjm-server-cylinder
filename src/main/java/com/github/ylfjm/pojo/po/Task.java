@@ -38,8 +38,8 @@ public class Task {
     private Date deadline;
     //任务状态：wait-未开始、doing-进行中、done-已完成、pause-已暂停、cancel-已取消、closed-已关闭
     private String status;
-    //任务描述
-    private String content;
+    //任务富文本描述
+    private String richText;
     //由谁创建
     private String openedBy;
     //创建日期

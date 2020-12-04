@@ -2,6 +2,7 @@ package com.github.ylfjm.controller;
 
 import com.github.ylfjm.common.pojo.vo.PageVO;
 import com.github.ylfjm.pojo.po.Task;
+import com.github.ylfjm.pojo.po.TaskRemark;
 import com.github.ylfjm.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 描述：任务
@@ -104,5 +107,15 @@ public class TaskController {
                              @PathVariable Integer pageNum,
                              @PathVariable Integer pageSize) {
         return taskService.page(status, pageNum, pageSize);
+    }
+
+    /**
+     * 查询任务备注列表
+     *
+     * @param taskId 任务ID
+     */
+    @GetMapping(value = "/task/{taskId}/remark")
+    public List<TaskRemark> remarkList(@PathVariable Integer taskId) {
+        return taskService.remarkList(taskId);
     }
 }
