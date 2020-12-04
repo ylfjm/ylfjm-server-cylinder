@@ -64,7 +64,7 @@ public class RoleController {
      */
     @PutMapping(value = "/roleUser")
     public void updateRoleUser(@RequestBody Role role) {
-        roleService.updateRoleUser(role, role.getUserIds());
+        roleService.updateRoleAdmin(role, role.getAdminIds());
     }
 
     /**

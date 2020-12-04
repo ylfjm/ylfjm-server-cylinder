@@ -9,15 +9,23 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Table(name = "t_user")
+/**
+ * 描述：职位
+ *
+ * @Author Zhang Bo
+ * @Date 2020/12/4
+ */
+@Table(name = "position")
 @Getter
 @Setter
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class User {
+public class Position {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private Integer money;
+
+    private String name;
+    private String code;
 
 }

@@ -18,7 +18,7 @@ import java.util.List;
  * @author YLFJM
  * @date 2018/11/2
  */
-@Table(name = "system_menu")
+@Table(name = "menu")
 @Getter
 @Setter
 @JsonInclude(value = JsonInclude.Include.NON_NULL)

@@ -12,7 +12,7 @@ import javax.persistence.Table;
  * @author YLFJM
  * @date 2018/11/2
  */
-@Table(name = "system_admin__role")
+@Table(name = "admin__role")
 @Getter
 @Setter
 public class AdminRole {

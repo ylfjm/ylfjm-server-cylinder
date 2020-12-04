@@ -12,7 +12,7 @@ import javax.persistence.Table;
  * @author YLFJM
  * @date 2018/11/7
  */
-@Table(name = "system_role__permission")
+@Table(name = "role__permission")
 @Getter
 @Setter
 public class RolePermission {

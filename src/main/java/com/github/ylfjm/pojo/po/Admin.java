@@ -19,7 +19,7 @@ import java.util.Set;
  * @author YLFJM
  * @date 2018/10/30
  */
-@Table(name = "system_admin")
+@Table(name = "admin")
 @Getter
 @Setter
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
@@ -32,6 +32,7 @@ public class Admin {
     private String password;//密码
     private String realName;//姓名
     private Integer deptId;//部门ID
+    private String postCode;//职位CODE
     private String remark;//备注
     private Boolean forbidden;//是否禁用：1-是，0-否
 

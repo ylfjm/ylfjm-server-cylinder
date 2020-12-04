@@ -25,7 +25,7 @@
         create_time,
         updater,
         update_time
-        from system_menu
+        from menu
         where 1=1
         <if test="pid != null">
             and pid = #{pid}
@@ -47,7 +47,7 @@
         pid,
         `level`,
         sorts
-        from system_menu
+        from menu
         order by `level`,sorts
     </select>
 
@@ -58,17 +58,17 @@
         method,
         code,
         menu_id
-        from system_permission where menu_id = #{c_id}
+        from permission where menu_id = #{c_id}
     </select>
 
     <!--获取一共有几级菜单-->
     <select id="selectMaxMenuLevel" resultType="java.lang.Integer">
-        select `level` from system_menu order by `level` desc limit 1
+        select `level` from menu order by `level` desc limit 1
     </select>
 
     <!--根据id查询pid-->
     <select id="selectPidById" parameterType="java.lang.Integer" resultType="java.lang.Integer">
-        select pid from system_menu where id = #{id}
+        select pid from menu where id = #{id}
     </select>
 
     <!--获取管理员所拥有的菜单-->
@@ -81,9 +81,9 @@
         m.pid,
         m.`level`,
         m.sorts
-        from system_menu m
-        inner join system_role__menu rm on m.id = rm.menu_id
-        inner join system_admin__role ar on rm.role_id = ar.role_id
+        from menu m
+        inner join role__menu rm on m.id = rm.menu_id
+        inner join admin__role ar on rm.role_id = ar.role_id
         where ar.admin_id = #{adminId}
         order by m.`level`,m.sorts
     </select>
@@ -99,7 +99,7 @@
         pid,
         `level`,
         sorts
-        from system_menu
+        from menu
         order by `level`,sorts
     </select>
 

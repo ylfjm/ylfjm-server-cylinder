@@ -146,11 +146,11 @@ public class RoleService {
     /**
      * 更新角色用户
      *
-     * @param role    角色信息
-     * @param userIds 用户ID集合
+     * @param role     角色信息
+     * @param adminIds 用户ID集合
      */
     @Transactional(rollbackFor = Exception.class)
-    public void updateRoleUser(Role role, Set<Integer> userIds) {
+    public void updateRoleAdmin(Role role, Set<Integer> adminIds) {
         if (Objects.isNull(role.getId())) {
             throw new BadRequestException("操作失败，请选择角色");
         }
@@ -159,8 +159,8 @@ public class RoleService {
             throw new BadRequestException("操作失败，角色不存在或已被删除");
         }
         // 为角色绑定权限
-        if (!CollectionUtils.isEmpty(userIds)) {
-            this.addUsers(role.getId(), userIds);
+        if (!CollectionUtils.isEmpty(adminIds)) {
+            this.addAdmin(role.getId(), adminIds);
         }
     }
 
@@ -225,17 +225,17 @@ public class RoleService {
     /**
      * 为角色添加用户
      *
-     * @param roleId  角色ID
-     * @param userIds 用户ID集合
+     * @param roleId   角色ID
+     * @param adminIds 用户ID集合
      */
-    private void addUsers(Integer roleId, Set<Integer> userIds) {
+    private void addAdmin(Integer roleId, Set<Integer> adminIds) {
         // 2-删除旧的角色-用户关联数据
         AdminRole adminRole = new AdminRole();
         adminRole.setRoleId(roleId);
         adminRoleMapper.delete(adminRole);
         // 4-新增新的角色-用户关联数据
         List<AdminRole> adminRoleList = new ArrayList<>();
-        for (Integer adminId : userIds) {
+        for (Integer adminId : adminIds) {
             adminRole = new AdminRole();
             adminRole.setRoleId(roleId);
             adminRole.setAdminId(adminId);

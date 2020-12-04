@@ -129,9 +129,9 @@ public class DepartmentService {
         if (roleId != null) {
             Set<Integer> adminIdList = adminRoleMapper.selectAdminIdsByRoleId(roleId);
             for (Department dept : list) {
-                List<Admin> userList = dept.getUserList();
-                if (!CollectionUtils.isEmpty(userList)) {
-                    for (Admin admin : userList) {
+                List<Admin> adminList = dept.getAdminList();
+                if (!CollectionUtils.isEmpty(adminList)) {
+                    for (Admin admin : adminList) {
                         admin.setHave(adminIdList.contains(admin.getId()));
                     }
                 }

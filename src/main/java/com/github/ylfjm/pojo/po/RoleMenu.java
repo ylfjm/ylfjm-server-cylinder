@@ -12,7 +12,7 @@ import javax.persistence.Table;
  * @author YLFJM
  * @date 2018/11/2
  */
-@Table(name = "system_role__menu")
+@Table(name = "role__menu")
 @Getter
 @Setter
 public class RoleMenu {

@@ -16,8 +16,8 @@
         p.updater,
         p.update_time,
         m.`name` as menuName
-        from system_permission p
-        left join system_menu m on p.menu_id = m.id
+        from permission p
+        left join menu m on p.menu_id = m.id
         where 1=1
         <if test="menuIdList!=null and menuIdList.size>0">
             and p.menu_id in
@@ -34,20 +34,20 @@
     </select>
 
     <select id="selectForCache" resultType="com.github.ylfjm.pojo.dto.PermissionCacheDTO">
-        select distinct code, method from system_permission
+        select distinct code, method from permission
     </select>
 
     <select id="selectCodeAndMethodByRoleId" resultType="com.github.ylfjm.pojo.dto.PermissionCacheDTO">
         select distinct
         p.code,
         p.method
-        from system_permission p
-        inner join system_role__permission rp on p.id = rp.permission_id
+        from permission p
+        inner join role__permission rp on p.id = rp.permission_id
         where rp.role_id = #{roleId}
     </select>
 
     <select id="selectIdByMenuId" resultType="java.lang.Integer">
-        select id from system_permission where menu_id = #{menuId}
+        select id from permission where menu_id = #{menuId}
     </select>
 
 </mapper>

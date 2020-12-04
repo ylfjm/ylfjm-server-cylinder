@@ -17,7 +17,7 @@ import java.util.Date;
  * @author YLFJM
  * @date 2018/11/2
  */
-@Table(name = "system_permission")
+@Table(name = "permission")
 @Getter
 @Setter
 @JsonInclude(value = JsonInclude.Include.NON_NULL)

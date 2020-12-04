@@ -16,7 +16,7 @@ import java.util.Date;
  * @author YLFJM
  * @date 2018/10/30
  */
-@Table(name = "system_admin_log")
+@Table(name = "admin_log")
 @Getter
 @Setter
 @JsonInclude(value = JsonInclude.Include.NON_NULL)

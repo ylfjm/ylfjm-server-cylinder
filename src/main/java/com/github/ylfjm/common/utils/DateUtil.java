@@ -9,6 +9,7 @@ public class DateUtil {
     // 默认时间格式化参数
 
     public static final String defaultDateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+    public static final String defaultDateTimeFormat2 = "yyyy-MM-dd";
 
     /**
      * 按指定格式，格式化指定的日期，并以字符串形式返回。
@@ -18,6 +19,17 @@ public class DateUtil {
             return null;
         }
         SimpleDateFormat formatter = new SimpleDateFormat(defaultDateTimeFormat);
+        return formatter.format(date);
+    }
+
+    /**
+     * 按指定格式，格式化指定的日期，并以字符串形式返回。
+     */
+    public static String dateToString2(Date date) {
+        if (date == null) {
+            return null;
+        }
+        SimpleDateFormat formatter = new SimpleDateFormat(defaultDateTimeFormat2);
         return formatter.format(date);
     }
 

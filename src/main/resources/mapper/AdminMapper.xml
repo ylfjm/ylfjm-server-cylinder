@@ -19,16 +19,17 @@
         a.real_name,
         a.dept_id,
         d.`name` as deptName,
+        a.post_code,
         a.remark,
         a.forbidden,
         a.creator,
         a.create_time,
         a.updater,
         a.update_time
-        from system_admin a
-        left join system_department d on d.id = a.dept_id
+        from admin a
+        left join department d on d.id = a.dept_id
         <if test="roleId != null">
-            inner join system_admin__role ar on a.id = ar.admin_id and ar.role_id = #{roleId}
+            inner join admin__role ar on a.id = ar.admin_id and ar.role_id = #{roleId}
         </if>
         where 1=1
         <if test="deptId != null">
@@ -43,7 +44,7 @@
     </select>
 
     <select id="selectRoleIdByAdminId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
-        select role_id from system_admin__role where admin_id = #{user_id}
+        select role_id from admin__role where admin_id = #{user_id}
     </select>
 
 </mapper>

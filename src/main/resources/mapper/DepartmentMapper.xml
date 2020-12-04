@@ -7,7 +7,7 @@
         select
         d.id as dept_id,
         d.`name`
-        from system_department d
+        from department d
         where 1=1
         <if test="name!=null and name!=''">
             and d.`name` like CONCAT('%', #{name}, '%')
@@ -16,7 +16,7 @@
 
     <resultMap id="userListByDeptId" type="com.github.ylfjm.pojo.po.Department">
         <result column="dept_id" property="id" jdbcType="INTEGER"/>
-        <collection property="userList" ofType="com.github.ylfjm.pojo.po.Admin" select="selectAdminByDeptId" column="dept_id">
+        <collection property="adminList" ofType="com.github.ylfjm.pojo.po.Admin" select="selectAdminByDeptId" column="dept_id">
             <result column="dept_id" property="deptId" jdbcType="INTEGER"/>
         </collection>
     </resultMap>
@@ -25,7 +25,7 @@
         select
         id,
         real_name
-        from system_admin
+        from admin
         where dept_id = #{dept_id}
     </select>
 
@@ -33,7 +33,7 @@
         select
         d.id as dept_id,
         d.`name`
-        from system_department d
+        from department d
     </select>
 
 </mapper>

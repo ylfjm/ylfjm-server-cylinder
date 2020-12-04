@@ -18,7 +18,7 @@ import java.util.List;
  * @author YLFJM
  * @date 2018/10/30
  */
-@Table(name = "system_department")
+@Table(name = "department")
 @Getter
 @Setter
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
@@ -35,6 +35,6 @@ public class Department {
     private Date updateTime;
 
     @Transient
-    private List<Admin> userList;
+    private List<Admin> adminList;
 
 }

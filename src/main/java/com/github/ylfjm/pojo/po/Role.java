@@ -19,7 +19,7 @@ import java.util.Set;
  * @author YLFJM
  * @date 2018/10/30
  */
-@Table(name = "system_role")
+@Table(name = "role")
 @Getter
 @Setter
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
@@ -36,12 +36,12 @@ public class Role {
     private Date updateTime;
 
     @Transient
-    private Set<Integer> userIds;//用户ID集合
+    private Set<Integer> adminIds;//用户ID集合
     @Transient
     private Set<Integer> menuIds;//菜单ID集合
     @Transient
     private Set<Integer> permissionIds;//权限ID集合
     @Transient
-    private List<Admin> userList;
+    private List<Admin> adminList;
 
 }

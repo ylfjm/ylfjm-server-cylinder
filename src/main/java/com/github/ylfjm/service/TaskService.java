@@ -7,8 +7,11 @@ import com.github.ylfjm.common.NotFoundException;
 import com.github.ylfjm.common.YlfjmException;
 import com.github.ylfjm.common.cache.UserCache;
 import com.github.ylfjm.common.pojo.vo.PageVO;
+import com.github.ylfjm.common.utils.DateUtil;
+import com.github.ylfjm.mapper.ProjectMapper;
 import com.github.ylfjm.mapper.TaskRemarkMapper;
 import com.github.ylfjm.mapper.TaskMapper;
+import com.github.ylfjm.pojo.po.Project;
 import com.github.ylfjm.pojo.po.Task;
 import com.github.ylfjm.pojo.po.TaskRemark;
 import com.github.ylfjm.pojo.po.TaskStatus;
@@ -35,6 +38,7 @@ public class TaskService {
 
     private final TaskMapper taskMapper;
     private final TaskRemarkMapper taskRemarkMapper;
+    private final ProjectMapper projectMapper;
 
     /**
      * 创建任务
@@ -57,7 +61,7 @@ public class TaskService {
         if (result < 1) {
             throw new YlfjmException("操作失败，创建任务发生错误");
         }
-        this.addTaskRemark(task.getId(), 1, "创建", now);
+        this.addTaskRemark(task.getId(), "创建", null, now);
     }
 
     /**
@@ -80,7 +84,7 @@ public class TaskService {
         if (result < 1) {
             throw new YlfjmException("操作失败，删除任务发生错误");
         }
-        this.addTaskRemark(id, 1, "删除", now);
+        this.addTaskRemark(id, "删除", null, now);
     }
 
     /**
@@ -100,15 +104,17 @@ public class TaskService {
         }
         //校验
         this.check(task);
-        this.setRequired(task);
-        this.setLastEdited(task, now);
-        task.setStatus(record.getStatus());
-        task.setDeleted(record.getDeleted());
-        int result = taskMapper.updateByPrimaryKey(task);
+        String richText = this.buildTextForUpdate(task, record, new StringBuffer());
+        this.copyBasic(task, record);
+        this.copyDeveloper(task, record);
+        this.setRequired(record);
+        this.setLastEdited(record, now);
+        int result = taskMapper.updateByPrimaryKey(record);
         if (result < 1) {
             throw new YlfjmException("操作失败，修改任务发生错误");
         }
-        this.addTaskRemark(task.getId(), 1, "编辑", now);
+        String text = "编辑";
+        this.addTaskRemark(task.getId(), text, richText, now);
     }
 
     /**
@@ -147,7 +153,23 @@ public class TaskService {
         if (result < 1) {
             throw new YlfjmException("操作失败，更新任务状态发生错误");
         }
-        this.addTaskRemark(id, 2, "更新任务状态【由'" + oldStatus + "'更新为'" + newStatus + "'】", now);
+        String text = null;
+        if (Objects.equals(newStatus, TaskStatus.doing.name())) {
+            text = "激活";
+        } else if (Objects.equals(newStatus, TaskStatus.done.name())) {
+            text = "完成";
+        } else if (Objects.equals(newStatus, TaskStatus.pause.name())) {
+            text = "暂停";
+        } else if (Objects.equals(newStatus, TaskStatus.cancel.name())) {
+            text = "取消";
+        } else if (Objects.equals(newStatus, TaskStatus.closed.name())) {
+            text = "关闭";
+        }
+        String richText = "任务状态【由'" + oldStatus + "'更新为'" + newStatus + "'】";
+        this.addTaskRemark(id, text, richText, now);
+        if (StringUtils.hasText(task.getRemark())) {
+            this.addTaskRemark(id, "添加备注", task.getRemark(), now);
+        }
     }
 
     /**
@@ -164,20 +186,19 @@ public class TaskService {
         if (record == null) {
             throw new BadRequestException("操作失败，任务不存在或已被删除");
         }
-        record.setPdDesigner(task.getPdDesigner());
-        record.setUiDesigner(task.getUiDesigner());
-        record.setWebDeveloper(task.getWebDeveloper());
-        record.setAndroidDeveloper(task.getAndroidDeveloper());
-        record.setIosDeveloper(task.getIosDeveloper());
-        record.setServerDeveloper(task.getServerDeveloper());
-        record.setTester(task.getTester());
+        String richText = this.buildTextForAssign(task, record, new StringBuffer());
+        this.copyDeveloper(task, record);
         this.setRequired(record);
         this.setLastEdited(record, now);
         int result = taskMapper.updateByPrimaryKey(record);
         if (result < 1) {
             throw new YlfjmException("操作失败，指派开发时发生错误");
         }
-        this.addTaskRemark(task.getId(), 2, task.getRemark(), now);
+        String text = "指派";
+        this.addTaskRemark(task.getId(), text, richText, now);
+        if (StringUtils.hasText(task.getRemark())) {
+            this.addTaskRemark(task.getId(), "添加备注", task.getRemark(), now);
+        }
     }
 
     /**
@@ -240,6 +261,37 @@ public class TaskService {
     }
 
     /**
+     * 复制基本信息
+     *
+     * @param fromTask 源
+     * @param toTask   目标
+     */
+    private void copyBasic(Task fromTask, Task toTask) {
+        toTask.setProjectId(fromTask.getProjectId());
+        toTask.setType(fromTask.getType());
+        toTask.setPri(fromTask.getPri());
+        toTask.setDeadline(fromTask.getDeadline());
+        toTask.setName(fromTask.getName());
+        toTask.setRichText(fromTask.getRichText());
+    }
+
+    /**
+     * 复制开发者信息
+     *
+     * @param fromTask 源
+     * @param toTask   目标
+     */
+    private void copyDeveloper(Task fromTask, Task toTask) {
+        toTask.setPdDesigner(fromTask.getPdDesigner());
+        toTask.setUiDesigner(fromTask.getUiDesigner());
+        toTask.setWebDeveloper(fromTask.getWebDeveloper());
+        toTask.setAndroidDeveloper(fromTask.getAndroidDeveloper());
+        toTask.setIosDeveloper(fromTask.getIosDeveloper());
+        toTask.setServerDeveloper(fromTask.getServerDeveloper());
+        toTask.setTester(fromTask.getTester());
+    }
+
+    /**
      * 设置指派对象信息
      */
     private void setRequired(Task task) {
@@ -261,18 +313,83 @@ public class TaskService {
     }
 
     /**
+     * 组装任务操作日志/备注内容
+     *
+     * @param fromTask 源
+     * @param toTask   目标
+     */
+    private String buildTextForUpdate(Task fromTask, Task toTask, StringBuffer sb) {
+        if (!Objects.equals(fromTask.getName(), toTask.getName())) {
+            sb.append("修改了任务名称，旧值为\"").append(fromTask.getName())
+                    .append("\"，新值为\"").append(toTask.getName()).append("\"。<br/>");
+        }
+        if (!Objects.equals(fromTask.getProjectId(), toTask.getProjectId())) {
+            Project fromProject = projectMapper.selectByPrimaryKey(fromTask.getProjectId());
+            Project toProject = projectMapper.selectByPrimaryKey(toTask.getProjectId());
+            if (fromProject != null && toProject != null) {
+                sb.append("修改了所属项目，旧值为\"").append(fromProject.getName())
+                        .append("\"，新值为\"").append(toProject.getName()).append("\"。<br/>");
+            }
+        }
+        if (!Objects.equals(fromTask.getPri(), toTask.getPri())) {
+            sb.append("修改了任务类型，旧值为\"").append(fromTask.getPri())
+                    .append("\"，新值为\"").append(toTask.getPri()).append("\"。<br/>");
+        }
+        if (!Objects.equals(fromTask.getDeadline(), toTask.getDeadline())) {
+            sb.append("修改了截止日期，旧值为\"").append(DateUtil.dateToString2(fromTask.getDeadline()))
+                    .append("\"，新值为\"").append(DateUtil.dateToString2(toTask.getDeadline())).append("\"。<br/>");
+        }
+        sb.append(this.buildTextForAssign(fromTask, toTask, new StringBuffer()));
+        return sb.toString();
+    }
+
+    /**
+     * 组装任务操作日志/备注内容
+     *
+     * @param fromTask 源
+     * @param toTask   目标
+     */
+    private String buildTextForAssign(Task fromTask, Task toTask, StringBuffer sb) {
+        if (!Objects.equals(fromTask.getPdDesigner(), toTask.getPdDesigner())) {
+            sb.append("修改了产品设计，旧值为\"").append(fromTask.getPdDesigner())
+                    .append("\"，新值为\"").append(toTask.getPdDesigner()).append("\"。<br/>");
+        }
+        if (!Objects.equals(fromTask.getUiDesigner(), toTask.getUiDesigner())) {
+            sb.append("修改了UI设计，旧值为\"").append(fromTask.getUiDesigner())
+                    .append("\"，新值为\"").append(toTask.getUiDesigner()).append("\"。<br/>");
+        }
+        if (!Objects.equals(fromTask.getAndroidDeveloper(), toTask.getAndroidDeveloper())) {
+            sb.append("修改了安卓开发，旧值为\"").append(fromTask.getAndroidDeveloper())
+                    .append("\"，新值为\"").append(toTask.getAndroidDeveloper()).append("\"。<br/>");
+        }
+        if (!Objects.equals(fromTask.getIosDeveloper(), toTask.getIosDeveloper())) {
+            sb.append("修改了苹果开发，旧值为\"").append(fromTask.getIosDeveloper())
+                    .append("\"，新值为\"").append(toTask.getIosDeveloper()).append("\"。<br/>");
+        }
+        if (!Objects.equals(fromTask.getWebDeveloper(), toTask.getWebDeveloper())) {
+            sb.append("修改了前端开发，旧值为\"").append(fromTask.getWebDeveloper())
+                    .append("\"，新值为\"").append(toTask.getWebDeveloper()).append("\"。<br/>");
+        }
+        if (!Objects.equals(fromTask.getServerDeveloper(), toTask.getServerDeveloper())) {
+            sb.append("修改了后端开发，旧值为\"").append(fromTask.getServerDeveloper())
+                    .append("\"，新值为\"").append(toTask.getServerDeveloper()).append("\"。<br/>");
+        }
+        if (!Objects.equals(fromTask.getTester(), toTask.getTester())) {
+            sb.append("修改了测试人员，旧值为\"").append(fromTask.getTester())
+                    .append("\"，新值为\"").append(toTask.getTester()).append("\"。<br/>");
+        }
+        return sb.toString();
+    }
+
+    /**
      * 添加任务备注
      */
-    private void addTaskRemark(Integer taskId, int textType, String text, Date createdate) {
+    private void addTaskRemark(Integer taskId, String text, String RichText, Date createdate) {
         TaskRemark taskRemark = new TaskRemark();
         taskRemark.setTaskId(taskId);
-        taskRemark.setTextType(textType);
-        if (textType == 1) {
-            taskRemark.setText(text);
-        } else {
-            taskRemark.setRichText(text);
-        }
-        taskRemark.setCreateBy(UserCache.getAccount());
+        taskRemark.setText(text);
+        taskRemark.setRichText(RichText);
+        taskRemark.setCreateBy(UserCache.getCurrentAdminRealName());
         taskRemark.setCreateDate(createdate);
         taskRemarkMapper.insert(taskRemark);
     }

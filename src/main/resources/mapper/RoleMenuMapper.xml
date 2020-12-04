@@ -4,7 +4,7 @@
 <mapper namespace="com.github.ylfjm.mapper.RoleMenuMapper">
 
     <insert id="batchInsert" parameterType="java.util.List">
-        insert into system_role__menu (
+        insert into role__menu (
         role_id,
         menu_id
         )
@@ -18,7 +18,7 @@
     </insert>
 
     <select id="selectMenuIdsByRoleId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
-        select distinct menu_id from system_role__menu where 1 = 1
+        select distinct menu_id from role__menu where 1 = 1
         <if test="roleId != null">
             and role_id = #{roleId}
         </if>

@@ -4,7 +4,7 @@
 <mapper namespace="com.github.ylfjm.mapper.AdminRoleMapper">
 
     <insert id="batchInsert" parameterType="java.util.List">
-        insert into system_admin__role (
+        insert into admin__role (
         admin_id,
         role_id
         )
@@ -18,11 +18,11 @@
     </insert>
 
     <select id="selectRoleIdsByAdminId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
-        select distinct role_id from system_admin__role where admin_id = #{adminId}
+        select distinct role_id from admin__role where admin_id = #{adminId}
     </select>
 
     <select id="selectAdminIdsByRoleId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
-        select distinct admin_id from system_admin__role where role_id = #{roleId}
+        select distinct admin_id from admin__role where role_id = #{roleId}
     </select>
 
 </mapper>

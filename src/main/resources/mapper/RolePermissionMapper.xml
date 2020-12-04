@@ -4,7 +4,7 @@
 <mapper namespace="com.github.ylfjm.mapper.RolePermissionMapper">
 
     <insert id="batchInsert" parameterType="java.util.List">
-        insert into system_role__permission (
+        insert into role__permission (
         role_id,
         permission_id
         )
@@ -18,7 +18,7 @@
     </insert>
 
     <select id="selectPermissionIdsByRoleId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
-        select distinct permission_id from system_role__permission where 1 = 1
+        select distinct permission_id from role__permission where 1 = 1
         <if test="roleId != null">
             and role_id = #{roleId}
         </if>
