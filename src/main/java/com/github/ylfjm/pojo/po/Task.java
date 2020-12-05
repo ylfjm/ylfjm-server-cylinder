@@ -123,5 +123,7 @@ public class Task {
 
     @Transient
     private String remark;
+    @Transient
+    private Date estimateDate;
 
 }

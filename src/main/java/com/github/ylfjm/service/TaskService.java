@@ -114,7 +114,9 @@ public class TaskService {
             throw new YlfjmException("操作失败，修改任务发生错误");
         }
         String text = "编辑";
-        this.addTaskRemark(task.getId(), text, richText, now);
+        if (StringUtils.hasText(richText)) {
+            this.addTaskRemark(task.getId(), text, richText, now);
+        }
     }
 
     /**
@@ -165,7 +167,7 @@ public class TaskService {
         } else if (Objects.equals(newStatus, TaskStatus.closed.name())) {
             text = "关闭";
         }
-        String richText = "任务状态【由'" + oldStatus + "'更新为'" + newStatus + "'】";
+        String richText = "修改了 <strong><em>任务状态</em></strong>，旧值为\"" + oldStatus + "\"，新值为\"" + newStatus + "\"。<br/>";
         this.addTaskRemark(id, text, richText, now);
         if (StringUtils.hasText(task.getRemark())) {
             this.addTaskRemark(id, "添加备注", task.getRemark(), now);
@@ -195,7 +197,9 @@ public class TaskService {
             throw new YlfjmException("操作失败，指派开发时发生错误");
         }
         String text = "指派";
-        this.addTaskRemark(task.getId(), text, richText, now);
+        if (StringUtils.hasText(richText)) {
+            this.addTaskRemark(task.getId(), text, richText, now);
+        }
         if (StringUtils.hasText(task.getRemark())) {
             this.addTaskRemark(task.getId(), "添加备注", task.getRemark(), now);
         }
@@ -320,23 +324,23 @@ public class TaskService {
      */
     private String buildTextForUpdate(Task fromTask, Task toTask, StringBuffer sb) {
         if (!Objects.equals(fromTask.getName(), toTask.getName())) {
-            sb.append("修改了任务名称，旧值为\"").append(fromTask.getName())
+            sb.append("修改了 <strong><em>任务名称</em></strong>，旧值为\"").append(fromTask.getName())
                     .append("\"，新值为\"").append(toTask.getName()).append("\"。<br/>");
         }
         if (!Objects.equals(fromTask.getProjectId(), toTask.getProjectId())) {
             Project fromProject = projectMapper.selectByPrimaryKey(fromTask.getProjectId());
             Project toProject = projectMapper.selectByPrimaryKey(toTask.getProjectId());
             if (fromProject != null && toProject != null) {
-                sb.append("修改了所属项目，旧值为\"").append(fromProject.getName())
+                sb.append("修改了 <strong><em>所属项目</em></strong>，旧值为\"").append(fromProject.getName())
                         .append("\"，新值为\"").append(toProject.getName()).append("\"。<br/>");
             }
         }
         if (!Objects.equals(fromTask.getPri(), toTask.getPri())) {
-            sb.append("修改了任务类型，旧值为\"").append(fromTask.getPri())
+            sb.append("修改了 <strong><em>任务类型</em></strong>，旧值为\"").append(fromTask.getPri())
                     .append("\"，新值为\"").append(toTask.getPri()).append("\"。<br/>");
         }
         if (!Objects.equals(fromTask.getDeadline(), toTask.getDeadline())) {
-            sb.append("修改了截止日期，旧值为\"").append(DateUtil.dateToString2(fromTask.getDeadline()))
+            sb.append("修改了 <strong><em>截止日期</em></strong>，旧值为\"").append(DateUtil.dateToString2(fromTask.getDeadline()))
                     .append("\"，新值为\"").append(DateUtil.dateToString2(toTask.getDeadline())).append("\"。<br/>");
         }
         sb.append(this.buildTextForAssign(fromTask, toTask, new StringBuffer()));
@@ -351,31 +355,31 @@ public class TaskService {
      */
     private String buildTextForAssign(Task fromTask, Task toTask, StringBuffer sb) {
         if (!Objects.equals(fromTask.getPdDesigner(), toTask.getPdDesigner())) {
-            sb.append("修改了产品设计，旧值为\"").append(fromTask.getPdDesigner())
+            sb.append("修改了 <strong><em>产品设计</em></strong>，旧值为\"").append(fromTask.getPdDesigner())
                     .append("\"，新值为\"").append(toTask.getPdDesigner()).append("\"。<br/>");
         }
         if (!Objects.equals(fromTask.getUiDesigner(), toTask.getUiDesigner())) {
-            sb.append("修改了UI设计，旧值为\"").append(fromTask.getUiDesigner())
+            sb.append("修改了 <strong><em>UI设计</em></strong>，旧值为\"").append(fromTask.getUiDesigner())
                     .append("\"，新值为\"").append(toTask.getUiDesigner()).append("\"。<br/>");
         }
         if (!Objects.equals(fromTask.getAndroidDeveloper(), toTask.getAndroidDeveloper())) {
-            sb.append("修改了安卓开发，旧值为\"").append(fromTask.getAndroidDeveloper())
+            sb.append("修改了 <strong><em>安卓开发</em></strong>，旧值为\"").append(fromTask.getAndroidDeveloper())
                     .append("\"，新值为\"").append(toTask.getAndroidDeveloper()).append("\"。<br/>");
         }
         if (!Objects.equals(fromTask.getIosDeveloper(), toTask.getIosDeveloper())) {
-            sb.append("修改了苹果开发，旧值为\"").append(fromTask.getIosDeveloper())
+            sb.append("修改了 <strong><em>苹果开发</em></strong>，旧值为\"").append(fromTask.getIosDeveloper())
                     .append("\"，新值为\"").append(toTask.getIosDeveloper()).append("\"。<br/>");
         }
         if (!Objects.equals(fromTask.getWebDeveloper(), toTask.getWebDeveloper())) {
-            sb.append("修改了前端开发，旧值为\"").append(fromTask.getWebDeveloper())
+            sb.append("修改了 <strong><em>前端开发</em></strong>，旧值为\"").append(fromTask.getWebDeveloper())
                     .append("\"，新值为\"").append(toTask.getWebDeveloper()).append("\"。<br/>");
         }
         if (!Objects.equals(fromTask.getServerDeveloper(), toTask.getServerDeveloper())) {
-            sb.append("修改了后端开发，旧值为\"").append(fromTask.getServerDeveloper())
+            sb.append("修改了 <strong><em>后端开发</em></strong>，旧值为\"").append(fromTask.getServerDeveloper())
                     .append("\"，新值为\"").append(toTask.getServerDeveloper()).append("\"。<br/>");
         }
         if (!Objects.equals(fromTask.getTester(), toTask.getTester())) {
-            sb.append("修改了测试人员，旧值为\"").append(fromTask.getTester())
+            sb.append("修改了 <strong><em>测试人员</em></strong>，旧值为\"").append(fromTask.getTester())
                     .append("\"，新值为\"").append(toTask.getTester()).append("\"。<br/>");
         }
         return sb.toString();
