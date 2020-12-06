@@ -75,6 +75,7 @@ public class AdminController {
      * @param pageSize  每页大小
      * @param roleId    角色ID
      * @param deptId    部门ID
+     * @param postCode  职位代码
      * @param realName  管理员姓名
      * @param forbidden 禁用状态
      */
@@ -83,9 +84,10 @@ public class AdminController {
                               @PathVariable Integer pageSize,
                               @RequestParam(required = false) Integer roleId,
                               @RequestParam(required = false) Integer deptId,
+                              @RequestParam(required = false) String postCode,
                               @RequestParam(required = false) String realName,
                               @RequestParam(required = false) Boolean forbidden) {
-        return adminService.page(pageNum, pageSize, roleId, deptId, realName, forbidden);
+        return adminService.page(pageNum, pageSize, roleId, deptId, postCode, realName, forbidden);
     }
 
 }

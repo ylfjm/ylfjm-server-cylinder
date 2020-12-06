@@ -12,11 +12,13 @@ public interface AdminMapper extends Mapper<Admin> {
      *
      * @param roleId    角色ID
      * @param deptId    部门ID
+     * @param postCode  职位代码
      * @param realName  姓名
      * @param forbidden 禁用状态
      */
     Page<Admin> selectWithRole(@Param("roleId") Integer roleId,
                                @Param("deptId") Integer deptId,
+                               @Param("postCode") String postCode,
                                @Param("realName") String realName,
                                @Param("forbidden") Boolean forbidden);
 

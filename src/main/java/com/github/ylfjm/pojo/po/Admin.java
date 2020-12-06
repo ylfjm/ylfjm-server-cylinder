@@ -48,6 +48,8 @@ public class Admin {
     @Transient
     private Set<Integer> roleIds;//角色ID集合
     @Transient
+    private Set<String> roleNameList;//角色名称集合
+    @Transient
     public List<Menu> menus;//管理员拥有的菜单列表
 
 }

@@ -10,7 +10,6 @@
         p.method,
         p.code,
         p.menu_id,
-        p.sys_type,
         p.creator,
         p.create_time,
         p.updater,

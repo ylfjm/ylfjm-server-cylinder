@@ -15,6 +15,7 @@ import com.github.ylfjm.mapper.MenuMapper;
 import com.github.ylfjm.pojo.po.Admin;
 import com.github.ylfjm.pojo.po.AdminLog;
 import com.github.ylfjm.pojo.po.AdminRole;
+import com.github.ylfjm.pojo.po.Department;
 import com.github.ylfjm.pojo.po.Menu;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -225,13 +226,14 @@ public class AdminService {
      * @param pageSize  每页大小
      * @param roleId    角色ID
      * @param deptId    部门ID
+     * @param postCode  职位代码
      * @param realName  姓名
      * @param forbidden 禁用状态
      */
-    public PageVO<Admin> page(int pageNum, int pageSize, Integer roleId, Integer deptId, String realName, Boolean forbidden) {
+    public PageVO<Admin> page(int pageNum, int pageSize, Integer roleId, Integer deptId, String postCode, String realName, Boolean forbidden) {
         // 分页查询
         PageHelper.startPage(pageNum, pageSize);
-        Page<Admin> page = adminMapper.selectWithRole(roleId, deptId, realName, forbidden);
+        Page<Admin> page = adminMapper.selectWithRole(roleId, deptId, postCode, realName, forbidden);
         // PO对象转成DTO对象
         return new PageVO<>(pageNum, page);
     }
@@ -281,9 +283,14 @@ public class AdminService {
         if (admin.getDeptId() == null) {
             throw new BadRequestException("操作失败，请选择部门");
         }
-        boolean exists = departmentMapper.existsWithPrimaryKey(admin.getDeptId());
-        if (!exists) {
+        Department department = departmentMapper.selectByPrimaryKey(admin.getDeptId());
+        if (department == null) {
             throw new BadRequestException("操作失败，部门不存在或已被删除");
+        } else {
+            admin.setDeptName(department.getName());
+        }
+        if (!StringUtils.hasText(admin.getPostCode())) {
+            throw new BadRequestException("操作失败，请选择职位");
         }
         if (CollectionUtils.isEmpty(roleIds)) {
             throw new BadRequestException("操作失败，请选择角色");
