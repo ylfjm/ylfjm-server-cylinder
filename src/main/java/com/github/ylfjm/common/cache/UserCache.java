@@ -69,17 +69,6 @@ public class UserCache {
     }
 
     /**
-     * 获取当前登录的管理员的姓名
-     */
-    public static String getCurrentAdminRealName() {
-        JWTInfo jwtInfo = getJWTInfo();
-        if (jwtInfo != null) {
-            return jwtInfo.getRealName();
-        }
-        throw new NoLoginException();
-    }
-
-    /**
      * 获取当前登录的用户ID
      */
     public static Integer getId() {
@@ -91,12 +80,34 @@ public class UserCache {
     }
 
     /**
-     * 获取当前登录的用户的账号
+     * 获取当前登录的用户的用户名
      */
-    public static String getAccount() {
+    public static String getCurrentUserName() {
         JWTInfo jwtInfo = getJWTInfo();
         if (jwtInfo != null) {
             return jwtInfo.getAccount();
+        }
+        throw new NoLoginException();
+    }
+
+    /**
+     * 获取当前登录的用户的姓名
+     */
+    public static String getCurrentRealName() {
+        JWTInfo jwtInfo = getJWTInfo();
+        if (jwtInfo != null) {
+            return jwtInfo.getRealName();
+        }
+        throw new NoLoginException();
+    }
+
+    /**
+     * 获取当前登录的用户的职位编码
+     */
+    public static String getCurrentPostCode() {
+        JWTInfo jwtInfo = getJWTInfo();
+        if (jwtInfo != null) {
+            return jwtInfo.getPostCode();
         }
         throw new NoLoginException();
     }

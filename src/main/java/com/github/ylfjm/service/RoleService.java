@@ -66,7 +66,7 @@ public class RoleService {
         if (count > 0) {
             throw new BadRequestException("操作失败，角色已存在");
         }
-        role.setCreator(UserCache.getCurrentAdminRealName());
+        role.setCreator(UserCache.getCurrentRealName());
         role.setCreateTime(new Date());
         role.setId(null);
         int result = roleMapper.insert(role);
@@ -135,7 +135,7 @@ public class RoleService {
         if (count > 0) {
             throw new BadRequestException("操作失败，角色已存在");
         }
-        role.setUpdater(UserCache.getCurrentAdminRealName());
+        role.setUpdater(UserCache.getCurrentRealName());
         role.setUpdateTime(new Date());
         int result = roleMapper.updateByPrimaryKeySelective(role);
         if (result < 1) {

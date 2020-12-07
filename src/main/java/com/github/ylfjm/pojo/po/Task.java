@@ -37,6 +37,7 @@ public class Task {
     //截止日期
     private Date deadline;
     //任务状态：wait-未开始、doing-进行中、done-已完成、pause-已暂停、cancel-已取消、closed-已关闭
+    //任务状态：doing-进行中、done-已完成、cancel-已取消、closed-已关闭
     private String status;
     //任务富文本描述
     private String richText;
@@ -44,10 +45,10 @@ public class Task {
     private String openedBy;
     //创建日期
     private Date openedDate;
-    //由谁完成
-    private String finishedBy;
-    //完成时间
-    private Date finishedDate;
+    // //由谁完成
+    // private String finishedBy;
+    // //完成时间
+    // private Date finishedDate;
     //由谁取消
     private String canceledBy;
     //取消时间
@@ -125,5 +126,7 @@ public class Task {
     private String remark;
     @Transient
     private Date estimateDate;
+    @Transient
+    private Date finishedDate;
 
 }

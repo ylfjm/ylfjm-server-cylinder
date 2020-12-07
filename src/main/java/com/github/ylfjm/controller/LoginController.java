@@ -46,6 +46,7 @@ public class LoginController {
         jwtInfo.setId(admin.getId());
         jwtInfo.setAccount(admin.getUserName());
         jwtInfo.setRealName(admin.getRealName());
+        jwtInfo.setPostCode(admin.getPostCode());
         String jwtToken = JwtHelper.createJWTToken(jwtInfo);
         response.setHeader(AuthConstant.ADMIN_TOKEN, jwtToken);
         return admin;

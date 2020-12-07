@@ -87,7 +87,7 @@ public class MenuService {
         if (count > 0) {
             throw new BadRequestException("操作失败，菜单URL已存在");
         }
-        menu.setCreator(UserCache.getCurrentAdminRealName());
+        menu.setCreator(UserCache.getCurrentRealName());
         menu.setCreateTime(new Date());
         menu.setId(null);
         int result = menuMapper.insert(menu);
@@ -183,7 +183,7 @@ public class MenuService {
         if (count > 0) {
             throw new BadRequestException("操作失败，菜单URL已存在");
         }
-        menu.setUpdater(UserCache.getCurrentAdminRealName());
+        menu.setUpdater(UserCache.getCurrentRealName());
         menu.setUpdateTime(new Date());
         menuMapper.updateByPrimaryKeySelective(menu);
     }

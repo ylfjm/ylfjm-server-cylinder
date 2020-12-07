@@ -9,10 +9,11 @@ import com.github.ylfjm.common.cache.UserCache;
 import com.github.ylfjm.common.pojo.vo.PageVO;
 import com.github.ylfjm.common.utils.DateUtil;
 import com.github.ylfjm.mapper.ProjectMapper;
-import com.github.ylfjm.mapper.TaskRemarkMapper;
 import com.github.ylfjm.mapper.TaskMapper;
+import com.github.ylfjm.mapper.TaskRemarkMapper;
 import com.github.ylfjm.pojo.po.Project;
 import com.github.ylfjm.pojo.po.Task;
+import com.github.ylfjm.pojo.po.TaskOperType;
 import com.github.ylfjm.pojo.po.TaskRemark;
 import com.github.ylfjm.pojo.po.TaskStatus;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -53,9 +55,9 @@ public class TaskService {
         this.setRequired(task);
         this.setLastEdited(task, now);
         task.setId(null);
-        task.setStatus("wait");
+        task.setStatus(TaskStatus.doing.name());
         task.setDeleted(false);
-        task.setOpenedBy(UserCache.getAccount());
+        task.setOpenedBy(UserCache.getCurrentUserName());
         task.setOpenedDate(now);
         int result = taskMapper.insertSelective(task);
         if (result < 1) {
@@ -120,88 +122,55 @@ public class TaskService {
     }
 
     /**
-     * 更新任务状态
+     * 任务详情操作更新任务状态
      *
-     * @param id        任务ID
-     * @param oldStatus 当前状态
-     * @param newStatus 更新后状态
+     * @param opeType 操作类型
+     * @param task    任务
      */
     @Transactional(rollbackFor = Exception.class)
-    public void updateStatus(Integer id, String oldStatus, String newStatus, String closedReason) {
+    public void updateStatus(String opeType, Task task) {
         Date now = new Date();
-        Task task = taskMapper.selectByPrimaryKey(id);
-        if (task == null) {
-            throw new NotFoundException("操作失败，任务不存在或已被删除");
-        }
-        if (!Objects.equals(task.getStatus(), oldStatus)) {
-            throw new NotFoundException("操作失败，任务状态已更新，请重试");
-        }
-        if (!TaskStatus.contains(oldStatus) || !TaskStatus.contains(newStatus)) {
-            throw new NotFoundException("操作失败，任务状态有误");
-        }
-        Task update = new Task();
-        update.setId(id);
-        update.setStatus(newStatus);
-        if (Objects.equals(newStatus, TaskStatus.cancel.name())) {
-            update.setCanceledBy(UserCache.getAccount());
-            update.setCanceledDate(now);
-        } else if (Objects.equals(newStatus, TaskStatus.closed.name())) {
-            update.setClosedBy(UserCache.getAccount());
-            update.setClosedDate(now);
-            update.setClosedReason(closedReason);
-        }
-        this.setLastEdited(update, now);
-        int result = taskMapper.updateByPrimaryKeySelective(update);
-        if (result < 1) {
-            throw new YlfjmException("操作失败，更新任务状态发生错误");
-        }
         String text = null;
-        if (Objects.equals(newStatus, TaskStatus.doing.name())) {
-            text = "激活";
-        } else if (Objects.equals(newStatus, TaskStatus.done.name())) {
-            text = "完成";
-        } else if (Objects.equals(newStatus, TaskStatus.pause.name())) {
-            text = "暂停";
-        } else if (Objects.equals(newStatus, TaskStatus.cancel.name())) {
-            text = "取消";
-        } else if (Objects.equals(newStatus, TaskStatus.closed.name())) {
-            text = "关闭";
-        }
-        String richText = "修改了 <strong><em>任务状态</em></strong>，旧值为\"" + oldStatus + "\"，新值为\"" + newStatus + "\"。<br/>";
-        this.addTaskRemark(id, text, richText, now);
-        if (StringUtils.hasText(task.getRemark())) {
-            this.addTaskRemark(id, "添加备注", task.getRemark(), now);
-        }
-    }
-
-    /**
-     * 指派
-     *
-     * @param task 任务信息
-     */
-    public void assign(Task task) {
-        Date now = new Date();
-        if (task.getId() == null) {
-            throw new BadRequestException("操作失败，缺少任务ID");
-        }
+        String richText = null;
         Task record = taskMapper.selectByPrimaryKey(task.getId());
         if (record == null) {
-            throw new BadRequestException("操作失败，任务不存在或已被删除");
+            throw new NotFoundException("操作失败，任务不存在或已被删除");
         }
-        String richText = this.buildTextForAssign(task, record, new StringBuffer());
-        this.copyDeveloper(task, record);
-        this.setRequired(record);
+        if (Objects.equals(opeType, TaskOperType.assign.name())) {
+            text = "指派";
+            richText = this.buildTextForAssign(task, record, new StringBuffer());
+            this.copyDeveloper(task, record);
+            this.setRequired(record);
+        } else if (Objects.equals(opeType, TaskOperType.estimate.name())) {
+            text = "排期";
+            this.doEstimate(task, record);
+        } else if (Objects.equals(opeType, TaskOperType.complete.name())) {
+            text = "完成";
+            //TODO
+        } else if (Objects.equals(opeType, TaskOperType.activate.name())) {
+            text = "激活";
+            //TODO
+        } else if (Objects.equals(opeType, TaskOperType.cancel.name())) {
+            text = "取消";
+            record.setStatus(TaskStatus.cancel.name());
+            record.setCanceledBy(UserCache.getCurrentUserName());
+            record.setCanceledDate(now);
+        } else if (Objects.equals(opeType, TaskOperType.close.name())) {
+            text = "关闭";
+            record.setStatus(TaskStatus.closed.name());
+            record.setClosedBy(UserCache.getCurrentUserName());
+            record.setClosedDate(now);
+        }
         this.setLastEdited(record, now);
         int result = taskMapper.updateByPrimaryKey(record);
         if (result < 1) {
-            throw new YlfjmException("操作失败，指派开发时发生错误");
-        }
-        String text = "指派";
-        if (StringUtils.hasText(richText)) {
-            this.addTaskRemark(task.getId(), text, richText, now);
+            throw new YlfjmException("操作失败，更新任务状态发生错误");
         }
         if (StringUtils.hasText(task.getRemark())) {
-            this.addTaskRemark(task.getId(), "添加备注", task.getRemark(), now);
+            richText = (StringUtils.hasText(richText) ? richText : "") + task.getRemark();
+        }
+        if (StringUtils.hasText(richText)) {
+            this.addTaskRemark(task.getId(), text, richText, now);
         }
     }
 
@@ -312,7 +281,7 @@ public class TaskService {
      * 设置最后修改信息
      */
     private void setLastEdited(Task task, Date now) {
-        task.setLastEditedBy(UserCache.getAccount());
+        task.setLastEditedBy(UserCache.getCurrentUserName());
         task.setLastEditedDate(now);
     }
 
@@ -386,6 +355,69 @@ public class TaskService {
     }
 
     /**
+     * 排期
+     *
+     * @param task   前端传参
+     * @param record 数据库的
+     */
+    private void doEstimate(Task task, Task record) {
+        String currentPostCode = UserCache.getCurrentPostCode();
+        if (Objects.equals(currentPostCode, "po")) {
+            if (record.getPdRequired() && this.checkContains(record.getPdDesigner())) {
+                record.setPdEstimateDate(task.getEstimateDate());
+            } else {
+                throw new BadRequestException("操作失败，该任务没有指派给你");
+            }
+        } else if (Objects.equals(currentPostCode, "ui")) {
+            if (record.getUiRequired() && this.checkContains(record.getUiDesigner())) {
+                record.setUiEstimateDate(task.getEstimateDate());
+            } else {
+                throw new BadRequestException("操作失败，该任务没有指派给你");
+            }
+        } else if (Objects.equals(currentPostCode, "android")) {
+            if (record.getAndroidRequired() && this.checkContains(record.getAndroidDeveloper())) {
+                record.setAndroidEstimateDate(task.getEstimateDate());
+            } else {
+                throw new BadRequestException("操作失败，该任务没有指派给你");
+            }
+        } else if (Objects.equals(currentPostCode, "ios")) {
+            if (record.getIosRequired() && this.checkContains(record.getIosDeveloper())) {
+                record.setIosEstimateDate(task.getEstimateDate());
+            } else {
+                throw new BadRequestException("操作失败，该任务没有指派给你");
+            }
+        } else if (Objects.equals(currentPostCode, "web")) {
+            if (record.getWebRequired() && this.checkContains(record.getWebDeveloper())) {
+                record.setWebEstimateDate(task.getEstimateDate());
+            } else {
+                throw new BadRequestException("操作失败，该任务没有指派给你");
+            }
+        } else if (Objects.equals(currentPostCode, "dev")) {
+            if (record.getServerRequired() && this.checkContains(record.getServerDeveloper())) {
+                record.setServerEstimateDate(task.getEstimateDate());
+            } else {
+                throw new BadRequestException("操作失败，该任务没有指派给你");
+            }
+        } else if (Objects.equals(currentPostCode, "test")) {
+            if (record.getTestRequired() && this.checkContains(record.getTester())) {
+                record.setTestEstimateDate(task.getEstimateDate());
+            } else {
+                throw new BadRequestException("操作失败，该任务没有指派给你");
+            }
+        }
+    }
+
+    /**
+     * 校验当前用户是否是该任务的开发者
+     *
+     * @param developer 任务指派的开发人员
+     */
+    private boolean checkContains(String developer) {
+        String currentUserName = UserCache.getCurrentUserName();
+        return Arrays.stream(developer.split(",")).anyMatch(d -> Objects.equals(d, currentUserName));
+    }
+
+    /**
      * 添加任务备注
      */
     private void addTaskRemark(Integer taskId, String text, String RichText, Date createdate) {
@@ -393,7 +425,7 @@ public class TaskService {
         taskRemark.setTaskId(taskId);
         taskRemark.setText(text);
         taskRemark.setRichText(RichText);
-        taskRemark.setCreateBy(UserCache.getCurrentAdminRealName());
+        taskRemark.setCreateBy(UserCache.getCurrentRealName());
         taskRemark.setCreateDate(createdate);
         taskRemarkMapper.insert(taskRemark);
     }

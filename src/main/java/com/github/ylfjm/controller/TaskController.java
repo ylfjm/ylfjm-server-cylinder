@@ -61,28 +61,14 @@ public class TaskController {
     }
 
     /**
-     * 更新任务状态
+     * 任务详情操作任务状态
      *
-     * @param id        任务ID
-     * @param oldStatus 当前状态
-     * @param newStatus 更新后状态
+     * @param opeType 操作类型
+     * @param task    任务
      */
-    @PutMapping(value = "/task/{id}")
-    public void update(@PathVariable Integer id,
-                       @RequestParam String oldStatus,
-                       @RequestParam String newStatus,
-                       @RequestParam(required = false) String closedReason) {
-        taskService.updateStatus(id, oldStatus, newStatus, closedReason);
-    }
-
-    /**
-     * 任务指派
-     *
-     * @param task 任务信息
-     */
-    @PutMapping(value = "/task/assign")
-    public void assign(@RequestBody Task task) {
-        taskService.assign(task);
+    @PutMapping(value = "/task/{opeType}/oper")
+    public void update(@PathVariable String opeType, @RequestBody Task task) {
+        taskService.updateStatus(opeType, task);
     }
 
     /**

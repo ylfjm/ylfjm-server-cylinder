@@ -124,7 +124,7 @@ public class AdminService {
             throw new BadRequestException("操作失败，用户名已存在");
         }
         // 设置创建人
-        admin.setCreator(UserCache.getCurrentAdminRealName());
+        admin.setCreator(UserCache.getCurrentRealName());
         // 设置创建时间
         admin.setCreateTime(new Date());
         // 设置禁用状态为不禁用（默认）
@@ -168,7 +168,7 @@ public class AdminService {
         Admin update = new Admin();
         update.setId(admin.getId());
         // 设置更新人
-        update.setUpdater(UserCache.getCurrentAdminRealName());
+        update.setUpdater(UserCache.getCurrentRealName());
         // 设置更新时间
         update.setUpdateTime(new Date());
         // 设置禁用状态
@@ -207,7 +207,7 @@ public class AdminService {
             admin.setPassword(null);
         }
         // 设置更新人
-        admin.setUpdater(UserCache.getCurrentAdminRealName());
+        admin.setUpdater(UserCache.getCurrentRealName());
         // 设置更新时间
         admin.setUpdateTime(new Date());
         int result = adminMapper.updateByPrimaryKeySelective(admin);

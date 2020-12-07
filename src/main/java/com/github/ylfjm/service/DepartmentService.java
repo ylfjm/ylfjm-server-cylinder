@@ -48,7 +48,7 @@ public class DepartmentService {
             throw new BadRequestException("操作失败，部门名称不能为空");
         }
         department.setId(null);
-        department.setCreator(UserCache.getCurrentAdminRealName());
+        department.setCreator(UserCache.getCurrentRealName());
         department.setCreateTime(new Date());
         int result = departmentMapper.insert(department);
         if (result < 1) {
@@ -100,7 +100,7 @@ public class DepartmentService {
         if (count > 0) {
             throw new BadRequestException("操作失败，该部门已存在");
         }
-        department.setUpdater(UserCache.getCurrentAdminRealName());
+        department.setUpdater(UserCache.getCurrentRealName());
         department.setUpdateTime(new Date());
         departmentMapper.updateByPrimaryKeySelective(department);
     }

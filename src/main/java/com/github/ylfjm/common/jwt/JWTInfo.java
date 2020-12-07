@@ -15,9 +15,6 @@ public class JWTInfo implements Serializable {
     private Integer id;
     private String account;
     private String realName;
-    private Integer type;
-
-    public JWTInfo() {
-    }
+    private String postCode;
 
 }

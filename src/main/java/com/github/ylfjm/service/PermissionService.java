@@ -59,7 +59,7 @@ public class PermissionService {
             throw new BadRequestException("操作失败，权限已存在");
         }
         // 设置创建人
-        permission.setCreator(UserCache.getCurrentAdminRealName());
+        permission.setCreator(UserCache.getCurrentRealName());
         // 设置创建时间
         permission.setCreateTime(new Date());
         permission.setId(null);
@@ -123,7 +123,7 @@ public class PermissionService {
             throw new BadRequestException("操作失败，权限已存在");
         }
         // 设置更新人
-        permission.setUpdater(UserCache.getCurrentAdminRealName());
+        permission.setUpdater(UserCache.getCurrentRealName());
         // 设置更新时间
         permission.setUpdateTime(new Date());
         permissionMapper.updateByPrimaryKeySelective(permission);
