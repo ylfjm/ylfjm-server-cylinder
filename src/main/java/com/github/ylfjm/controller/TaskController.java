@@ -2,6 +2,7 @@ package com.github.ylfjm.controller;
 
 import com.github.ylfjm.common.pojo.vo.PageVO;
 import com.github.ylfjm.pojo.po.Task;
+import com.github.ylfjm.pojo.po.TaskActionType;
 import com.github.ylfjm.pojo.po.TaskRemark;
 import com.github.ylfjm.service.TaskService;
 import lombok.RequiredArgsConstructor;
@@ -63,12 +64,12 @@ public class TaskController {
     /**
      * 任务详情操作任务状态
      *
-     * @param opeType 操作类型
-     * @param task    任务
+     * @param actionType 操作类型 {@link TaskActionType}
+     * @param task       任务
      */
-    @PutMapping(value = "/task/{opeType}/oper")
-    public void update(@PathVariable String opeType, @RequestBody Task task) {
-        taskService.updateStatus(opeType, task);
+    @PutMapping(value = "/task/{actionType}/action")
+    public void update(@PathVariable String actionType, @RequestBody Task task) {
+        taskService.updateStatus(actionType, task);
     }
 
     /**

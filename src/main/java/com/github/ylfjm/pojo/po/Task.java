@@ -57,8 +57,6 @@ public class Task {
     private String closedBy;
     //关闭时间
     private Date closedDate;
-    //关闭原因
-    private String closedReason;
     //最后修改
     private String lastEditedBy;
     //最后修改日期

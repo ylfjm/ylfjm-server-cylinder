@@ -6,6 +6,6 @@ package com.github.ylfjm.pojo.po;
  * @Author Zhang Bo
  * @Date 2020/11/15
  */
-public enum TaskOperType {
+public enum TaskActionType {
     assign, estimate, complete, activate, cancel, close
 }

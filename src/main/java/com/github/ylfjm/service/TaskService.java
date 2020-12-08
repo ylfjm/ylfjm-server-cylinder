@@ -13,7 +13,7 @@ import com.github.ylfjm.mapper.TaskMapper;
 import com.github.ylfjm.mapper.TaskRemarkMapper;
 import com.github.ylfjm.pojo.po.Project;
 import com.github.ylfjm.pojo.po.Task;
-import com.github.ylfjm.pojo.po.TaskOperType;
+import com.github.ylfjm.pojo.po.TaskActionType;
 import com.github.ylfjm.pojo.po.TaskRemark;
 import com.github.ylfjm.pojo.po.TaskStatus;
 import lombok.RequiredArgsConstructor;
@@ -124,11 +124,11 @@ public class TaskService {
     /**
      * 任务详情操作更新任务状态
      *
-     * @param opeType 操作类型
+     * @param actionType 操作类型 {@link TaskActionType}
      * @param task    任务
      */
     @Transactional(rollbackFor = Exception.class)
-    public void updateStatus(String opeType, Task task) {
+    public void updateStatus(String actionType, Task task) {
         Date now = new Date();
         String text = null;
         String richText = null;
@@ -136,30 +136,35 @@ public class TaskService {
         if (record == null) {
             throw new NotFoundException("操作失败，任务不存在或已被删除");
         }
-        if (Objects.equals(opeType, TaskOperType.assign.name())) {
+        if (Objects.equals(actionType, TaskActionType.assign.name())) {
             text = "指派";
             richText = this.buildTextForAssign(task, record, new StringBuffer());
             this.copyDeveloper(task, record);
             this.setRequired(record);
-        } else if (Objects.equals(opeType, TaskOperType.estimate.name())) {
+        } else if (Objects.equals(actionType, TaskActionType.estimate.name())) {
             text = "排期";
-            this.doEstimate(task, record);
-        } else if (Objects.equals(opeType, TaskOperType.complete.name())) {
+            task.setFinishedDate(null);
+            this.doEstimateOrComplete(task, record);
+        } else if (Objects.equals(actionType, TaskActionType.complete.name())) {
             text = "完成";
-            //TODO
-        } else if (Objects.equals(opeType, TaskOperType.activate.name())) {
+            task.setEstimateDate(null);
+            this.doEstimateOrComplete(task, record);
+            this.allCompleteHandler(record);
+        } else if (Objects.equals(actionType, TaskActionType.activate.name())) {
             text = "激活";
-            //TODO
-        } else if (Objects.equals(opeType, TaskOperType.cancel.name())) {
+            record.setStatus(TaskStatus.doing.name());
+        } else if (Objects.equals(actionType, TaskActionType.cancel.name())) {
             text = "取消";
             record.setStatus(TaskStatus.cancel.name());
             record.setCanceledBy(UserCache.getCurrentUserName());
             record.setCanceledDate(now);
-        } else if (Objects.equals(opeType, TaskOperType.close.name())) {
+        } else if (Objects.equals(actionType, TaskActionType.close.name())) {
             text = "关闭";
             record.setStatus(TaskStatus.closed.name());
             record.setClosedBy(UserCache.getCurrentUserName());
             record.setClosedDate(now);
+        } else {
+            throw new NotFoundException("操作失败，未定义的操作");
         }
         this.setLastEdited(record, now);
         int result = taskMapper.updateByPrimaryKey(record);
@@ -355,55 +360,124 @@ public class TaskService {
     }
 
     /**
-     * 排期
+     * 排期/完成
      *
      * @param task   前端传参
      * @param record 数据库的
      */
-    private void doEstimate(Task task, Task record) {
+    private void doEstimateOrComplete(Task task, Task record) {
         String currentPostCode = UserCache.getCurrentPostCode();
+        String errorMessage = "操作失败，该任务没有指派给你";
         if (Objects.equals(currentPostCode, "po")) {
             if (record.getPdRequired() && this.checkContains(record.getPdDesigner())) {
-                record.setPdEstimateDate(task.getEstimateDate());
+                if (task.getEstimateDate() != null) {
+                    record.setPdEstimateDate(task.getEstimateDate());
+                }
+                if (task.getFinishedDate() != null) {
+                    record.setPdFinishedDate(task.getFinishedDate());
+                }
             } else {
-                throw new BadRequestException("操作失败，该任务没有指派给你");
+                throw new BadRequestException(errorMessage);
             }
         } else if (Objects.equals(currentPostCode, "ui")) {
             if (record.getUiRequired() && this.checkContains(record.getUiDesigner())) {
-                record.setUiEstimateDate(task.getEstimateDate());
+                if (task.getEstimateDate() != null) {
+                    record.setUiEstimateDate(task.getEstimateDate());
+                }
+                if (task.getFinishedDate() != null) {
+                    record.setUiFinishedDate(task.getFinishedDate());
+                }
             } else {
-                throw new BadRequestException("操作失败，该任务没有指派给你");
+                throw new BadRequestException(errorMessage);
             }
         } else if (Objects.equals(currentPostCode, "android")) {
             if (record.getAndroidRequired() && this.checkContains(record.getAndroidDeveloper())) {
-                record.setAndroidEstimateDate(task.getEstimateDate());
+                if (task.getEstimateDate() != null) {
+                    record.setAndroidEstimateDate(task.getEstimateDate());
+                }
+                if (task.getFinishedDate() != null) {
+                    record.setAndroidFinishedDate(task.getFinishedDate());
+                }
             } else {
-                throw new BadRequestException("操作失败，该任务没有指派给你");
+                throw new BadRequestException(errorMessage);
             }
         } else if (Objects.equals(currentPostCode, "ios")) {
             if (record.getIosRequired() && this.checkContains(record.getIosDeveloper())) {
-                record.setIosEstimateDate(task.getEstimateDate());
+                if (task.getEstimateDate() != null) {
+                    record.setIosEstimateDate(task.getEstimateDate());
+                }
+                if (task.getFinishedDate() != null) {
+                    record.setIosFinishedDate(task.getFinishedDate());
+                }
             } else {
-                throw new BadRequestException("操作失败，该任务没有指派给你");
+                throw new BadRequestException(errorMessage);
             }
         } else if (Objects.equals(currentPostCode, "web")) {
             if (record.getWebRequired() && this.checkContains(record.getWebDeveloper())) {
-                record.setWebEstimateDate(task.getEstimateDate());
+                if (task.getEstimateDate() != null) {
+                    record.setWebEstimateDate(task.getEstimateDate());
+                }
+                if (task.getFinishedDate() != null) {
+                    record.setWebFinishedDate(task.getFinishedDate());
+                }
             } else {
-                throw new BadRequestException("操作失败，该任务没有指派给你");
+                throw new BadRequestException(errorMessage);
             }
         } else if (Objects.equals(currentPostCode, "dev")) {
             if (record.getServerRequired() && this.checkContains(record.getServerDeveloper())) {
-                record.setServerEstimateDate(task.getEstimateDate());
+                if (task.getEstimateDate() != null) {
+                    record.setServerEstimateDate(task.getEstimateDate());
+                }
+                if (task.getFinishedDate() != null) {
+                    record.setServerFinishedDate(task.getFinishedDate());
+                }
             } else {
-                throw new BadRequestException("操作失败，该任务没有指派给你");
+                throw new BadRequestException(errorMessage);
             }
         } else if (Objects.equals(currentPostCode, "test")) {
             if (record.getTestRequired() && this.checkContains(record.getTester())) {
-                record.setTestEstimateDate(task.getEstimateDate());
+                if (task.getEstimateDate() != null) {
+                    record.setTestEstimateDate(task.getEstimateDate());
+                }
+                if (task.getFinishedDate() != null) {
+                    record.setTestFinishedDate(task.getFinishedDate());
+                }
             } else {
-                throw new BadRequestException("操作失败，该任务没有指派给你");
+                throw new BadRequestException(errorMessage);
             }
+        }
+    }
+
+    /**
+     * 所有开发都完成与否
+     *
+     * @param record 数据库的
+     */
+    private void allCompleteHandler(Task record) {
+        boolean allComplete = true;
+        if (record.getPdRequired() && record.getPdFinishedDate() == null) {
+            allComplete = false;
+        }
+        if (record.getUiRequired() && record.getUiFinishedDate() == null) {
+            allComplete = false;
+        }
+        if (record.getAndroidRequired() && record.getAndroidFinishedDate() == null) {
+            allComplete = false;
+        }
+        if (record.getIosRequired() && record.getIosFinishedDate() == null) {
+            allComplete = false;
+        }
+        if (record.getWebRequired() && record.getWebFinishedDate() == null) {
+            allComplete = false;
+        }
+        if (record.getServerRequired() && record.getServerFinishedDate() == null) {
+            allComplete = false;
+        }
+        if (record.getTestRequired() && record.getTestFinishedDate() == null) {
+            allComplete = false;
+        }
+        if (allComplete) {
+            record.setStatus(TaskStatus.done.name());
         }
     }
 

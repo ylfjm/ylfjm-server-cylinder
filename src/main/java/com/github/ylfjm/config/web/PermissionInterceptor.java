@@ -2,8 +2,6 @@ package com.github.ylfjm.config.web;
 
 import com.github.ylfjm.common.BadRequestException;
 import com.github.ylfjm.common.cache.UserCache;
-import com.github.ylfjm.common.enums.SystemType;
-import com.github.ylfjm.common.jwt.JWTInfo;
 import com.github.ylfjm.helper.PermissionCacheHelper;
 import com.github.ylfjm.pojo.dto.PermissionCacheDTO;
 import com.github.ylfjm.service.PermissionService;
@@ -16,7 +14,6 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -56,17 +53,7 @@ public class PermissionInterceptor extends HandlerInterceptorAdapter {
         if (!this.permissionRequired(permissionList, method, code)) {
             return true;
         }
-        //4-如果不是从后台请求的要放行
-        try {
-            JWTInfo jwtInfo = UserCache.getJWTInfo();
-            if (jwtInfo != null && !Objects.equals(jwtInfo.getType(), SystemType.SYSTEM.getValue())) {
-                return true;
-            }
-        } catch (Exception e) {
-            log.error("系统权限校验，获取JWTInfo发生异常。");
-            return true;
-        }
-        //5-权限校验
+        //4-权限校验
         Integer adminId = UserCache.getId();
         // 获取用户的权限列表
         Set<PermissionCacheDTO> permissions = permissionService.getPermissionList(adminId);
