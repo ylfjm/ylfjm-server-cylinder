@@ -106,7 +106,7 @@ public class TaskService {
         }
         //校验
         this.check(task);
-        String richText = this.buildTextForUpdate(task, record, new StringBuffer());
+        String richText = this.buildTextForUpdate(record, task, new StringBuffer());
         this.copyBasic(task, record);
         this.copyDeveloper(task, record);
         this.setRequired(record);
@@ -125,12 +125,12 @@ public class TaskService {
      * 任务详情操作更新任务状态
      *
      * @param actionType 操作类型 {@link TaskActionType}
-     * @param task    任务
+     * @param task       前端传参
      */
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(String actionType, Task task) {
         Date now = new Date();
-        String text = null;
+        String text;
         String richText = null;
         Task record = taskMapper.selectByPrimaryKey(task.getId());
         if (record == null) {
@@ -138,31 +138,43 @@ public class TaskService {
         }
         if (Objects.equals(actionType, TaskActionType.assign.name())) {
             text = "指派";
-            richText = this.buildTextForAssign(task, record, new StringBuffer());
+            richText = this.buildRichTextForAssign(record, task, new StringBuffer());
             this.copyDeveloper(task, record);
             this.setRequired(record);
+            if (StringUtils.hasText(richText)) {
+                this.addTaskRemark(task.getId(), text, richText, now);
+            }
         } else if (Objects.equals(actionType, TaskActionType.estimate.name())) {
             text = "排期";
             task.setFinishedDate(null);
             this.doEstimateOrComplete(task, record);
+            this.addTaskRemark(task.getId(), text, task.getRemark(), now);
         } else if (Objects.equals(actionType, TaskActionType.complete.name())) {
-            text = "完成";
+            text = "标记为完成";
             task.setEstimateDate(null);
+            if (task.getFinishedDate() == null) {
+                //如果前端没传完成时间就取当前时间为完成时间
+                task.setFinishedDate(now);
+            }
             this.doEstimateOrComplete(task, record);
             this.allCompleteHandler(record);
+            this.addTaskRemark(task.getId(), text, task.getRemark(), now);
         } else if (Objects.equals(actionType, TaskActionType.activate.name())) {
             text = "激活";
             record.setStatus(TaskStatus.doing.name());
+            this.addTaskRemark(task.getId(), text, task.getRemark(), now);
         } else if (Objects.equals(actionType, TaskActionType.cancel.name())) {
             text = "取消";
             record.setStatus(TaskStatus.cancel.name());
             record.setCanceledBy(UserCache.getCurrentUserName());
             record.setCanceledDate(now);
+            this.addTaskRemark(task.getId(), text, task.getRemark(), now);
         } else if (Objects.equals(actionType, TaskActionType.close.name())) {
             text = "关闭";
             record.setStatus(TaskStatus.closed.name());
             record.setClosedBy(UserCache.getCurrentUserName());
             record.setClosedDate(now);
+            this.addTaskRemark(task.getId(), text, task.getRemark(), now);
         } else {
             throw new NotFoundException("操作失败，未定义的操作");
         }
@@ -170,12 +182,6 @@ public class TaskService {
         int result = taskMapper.updateByPrimaryKey(record);
         if (result < 1) {
             throw new YlfjmException("操作失败，更新任务状态发生错误");
-        }
-        if (StringUtils.hasText(task.getRemark())) {
-            richText = (StringUtils.hasText(richText) ? richText : "") + task.getRemark();
-        }
-        if (StringUtils.hasText(richText)) {
-            this.addTaskRemark(task.getId(), text, richText, now);
         }
     }
 
@@ -293,68 +299,68 @@ public class TaskService {
     /**
      * 组装任务操作日志/备注内容
      *
-     * @param fromTask 源
-     * @param toTask   目标
+     * @param dbTask 数据库中的
+     * @param task   前端传参
      */
-    private String buildTextForUpdate(Task fromTask, Task toTask, StringBuffer sb) {
-        if (!Objects.equals(fromTask.getName(), toTask.getName())) {
-            sb.append("修改了 <strong><em>任务名称</em></strong>，旧值为\"").append(fromTask.getName())
-                    .append("\"，新值为\"").append(toTask.getName()).append("\"。<br/>");
+    private String buildTextForUpdate(Task dbTask, Task task, StringBuffer sb) {
+        if (!Objects.equals(dbTask.getName(), task.getName())) {
+            sb.append("修改了 <strong><em>任务名称</em></strong>，旧值为\"").append(dbTask.getName())
+                    .append("\"，新值为\"").append(task.getName()).append("\"。<br/>");
         }
-        if (!Objects.equals(fromTask.getProjectId(), toTask.getProjectId())) {
-            Project fromProject = projectMapper.selectByPrimaryKey(fromTask.getProjectId());
-            Project toProject = projectMapper.selectByPrimaryKey(toTask.getProjectId());
+        if (!Objects.equals(dbTask.getProjectId(), task.getProjectId())) {
+            Project fromProject = projectMapper.selectByPrimaryKey(dbTask.getProjectId());
+            Project toProject = projectMapper.selectByPrimaryKey(task.getProjectId());
             if (fromProject != null && toProject != null) {
                 sb.append("修改了 <strong><em>所属项目</em></strong>，旧值为\"").append(fromProject.getName())
                         .append("\"，新值为\"").append(toProject.getName()).append("\"。<br/>");
             }
         }
-        if (!Objects.equals(fromTask.getPri(), toTask.getPri())) {
-            sb.append("修改了 <strong><em>任务类型</em></strong>，旧值为\"").append(fromTask.getPri())
-                    .append("\"，新值为\"").append(toTask.getPri()).append("\"。<br/>");
+        if (!Objects.equals(dbTask.getPri(), task.getPri())) {
+            sb.append("修改了 <strong><em>任务类型</em></strong>，旧值为\"").append(dbTask.getPri())
+                    .append("\"，新值为\"").append(task.getPri()).append("\"。<br/>");
         }
-        if (!Objects.equals(fromTask.getDeadline(), toTask.getDeadline())) {
-            sb.append("修改了 <strong><em>截止日期</em></strong>，旧值为\"").append(DateUtil.dateToString2(fromTask.getDeadline()))
-                    .append("\"，新值为\"").append(DateUtil.dateToString2(toTask.getDeadline())).append("\"。<br/>");
+        if (!Objects.equals(dbTask.getDeadline(), task.getDeadline())) {
+            sb.append("修改了 <strong><em>截止日期</em></strong>，旧值为\"").append(DateUtil.dateToString2(dbTask.getDeadline()))
+                    .append("\"，新值为\"").append(DateUtil.dateToString2(task.getDeadline())).append("\"。<br/>");
         }
-        sb.append(this.buildTextForAssign(fromTask, toTask, new StringBuffer()));
+        sb.append(this.buildRichTextForAssign(dbTask, task, new StringBuffer()));
         return sb.toString();
     }
 
     /**
      * 组装任务操作日志/备注内容
      *
-     * @param fromTask 源
-     * @param toTask   目标
+     * @param dbTask 数据库中的
+     * @param task   前端传参
      */
-    private String buildTextForAssign(Task fromTask, Task toTask, StringBuffer sb) {
-        if (!Objects.equals(fromTask.getPdDesigner(), toTask.getPdDesigner())) {
-            sb.append("修改了 <strong><em>产品设计</em></strong>，旧值为\"").append(fromTask.getPdDesigner())
-                    .append("\"，新值为\"").append(toTask.getPdDesigner()).append("\"。<br/>");
+    private String buildRichTextForAssign(Task dbTask, Task task, StringBuffer sb) {
+        if (!Objects.equals(dbTask.getPdDesigner(), task.getPdDesigner())) {
+            sb.append("修改了 <strong><em>产品设计</em></strong>，旧值为\"").append(dbTask.getPdDesigner())
+                    .append("\"，新值为\"").append(task.getPdDesigner()).append("\"。<br/>");
         }
-        if (!Objects.equals(fromTask.getUiDesigner(), toTask.getUiDesigner())) {
-            sb.append("修改了 <strong><em>UI设计</em></strong>，旧值为\"").append(fromTask.getUiDesigner())
-                    .append("\"，新值为\"").append(toTask.getUiDesigner()).append("\"。<br/>");
+        if (!Objects.equals(dbTask.getUiDesigner(), task.getUiDesigner())) {
+            sb.append("修改了 <strong><em>UI设计</em></strong>，旧值为\"").append(dbTask.getUiDesigner())
+                    .append("\"，新值为\"").append(task.getUiDesigner()).append("\"。<br/>");
         }
-        if (!Objects.equals(fromTask.getAndroidDeveloper(), toTask.getAndroidDeveloper())) {
-            sb.append("修改了 <strong><em>安卓开发</em></strong>，旧值为\"").append(fromTask.getAndroidDeveloper())
-                    .append("\"，新值为\"").append(toTask.getAndroidDeveloper()).append("\"。<br/>");
+        if (!Objects.equals(dbTask.getAndroidDeveloper(), task.getAndroidDeveloper())) {
+            sb.append("修改了 <strong><em>安卓开发</em></strong>，旧值为\"").append(dbTask.getAndroidDeveloper())
+                    .append("\"，新值为\"").append(task.getAndroidDeveloper()).append("\"。<br/>");
         }
-        if (!Objects.equals(fromTask.getIosDeveloper(), toTask.getIosDeveloper())) {
-            sb.append("修改了 <strong><em>苹果开发</em></strong>，旧值为\"").append(fromTask.getIosDeveloper())
-                    .append("\"，新值为\"").append(toTask.getIosDeveloper()).append("\"。<br/>");
+        if (!Objects.equals(dbTask.getIosDeveloper(), task.getIosDeveloper())) {
+            sb.append("修改了 <strong><em>苹果开发</em></strong>，旧值为\"").append(dbTask.getIosDeveloper())
+                    .append("\"，新值为\"").append(task.getIosDeveloper()).append("\"。<br/>");
         }
-        if (!Objects.equals(fromTask.getWebDeveloper(), toTask.getWebDeveloper())) {
-            sb.append("修改了 <strong><em>前端开发</em></strong>，旧值为\"").append(fromTask.getWebDeveloper())
-                    .append("\"，新值为\"").append(toTask.getWebDeveloper()).append("\"。<br/>");
+        if (!Objects.equals(dbTask.getWebDeveloper(), task.getWebDeveloper())) {
+            sb.append("修改了 <strong><em>前端开发</em></strong>，旧值为\"").append(dbTask.getWebDeveloper())
+                    .append("\"，新值为\"").append(task.getWebDeveloper()).append("\"。<br/>");
         }
-        if (!Objects.equals(fromTask.getServerDeveloper(), toTask.getServerDeveloper())) {
-            sb.append("修改了 <strong><em>后端开发</em></strong>，旧值为\"").append(fromTask.getServerDeveloper())
-                    .append("\"，新值为\"").append(toTask.getServerDeveloper()).append("\"。<br/>");
+        if (!Objects.equals(dbTask.getServerDeveloper(), task.getServerDeveloper())) {
+            sb.append("修改了 <strong><em>后端开发</em></strong>，旧值为\"").append(dbTask.getServerDeveloper())
+                    .append("\"，新值为\"").append(task.getServerDeveloper()).append("\"。<br/>");
         }
-        if (!Objects.equals(fromTask.getTester(), toTask.getTester())) {
-            sb.append("修改了 <strong><em>测试人员</em></strong>，旧值为\"").append(fromTask.getTester())
-                    .append("\"，新值为\"").append(toTask.getTester()).append("\"。<br/>");
+        if (!Objects.equals(dbTask.getTester(), task.getTester())) {
+            sb.append("修改了 <strong><em>测试人员</em></strong>，旧值为\"").append(dbTask.getTester())
+                    .append("\"，新值为\"").append(task.getTester()).append("\"。<br/>");
         }
         return sb.toString();
     }
@@ -363,87 +369,106 @@ public class TaskService {
      * 排期/完成
      *
      * @param task   前端传参
-     * @param record 数据库的
+     * @param record 数据库中的
      */
     private void doEstimateOrComplete(Task task, Task record) {
         String currentPostCode = UserCache.getCurrentPostCode();
         String errorMessage = "操作失败，该任务没有指派给你";
+        String errorMessage2 = "操作失败，预计完成时间不支持二次修改";
         if (Objects.equals(currentPostCode, "po")) {
-            if (record.getPdRequired() && this.checkContains(record.getPdDesigner())) {
-                if (task.getEstimateDate() != null) {
-                    record.setPdEstimateDate(task.getEstimateDate());
-                }
-                if (task.getFinishedDate() != null) {
-                    record.setPdFinishedDate(task.getFinishedDate());
-                }
-            } else {
+            //任务没有指派给某职位或当前用户不在指派列表
+            if (!record.getPdRequired() || !this.checkContains(record.getPdDesigner())) {
                 throw new BadRequestException(errorMessage);
+            }
+            //设置预计完成时间
+            if (task.getEstimateDate() != null) {
+                //如果已经设置过预计完成时间
+                if (record.getPdEstimateDate() != null) {
+                    throw new BadRequestException(errorMessage2);
+                }
+                record.setPdEstimateDate(task.getEstimateDate());
+            }
+            //设置实际完成时间
+            if (task.getFinishedDate() != null) {
+                record.setPdFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "ui")) {
-            if (record.getUiRequired() && this.checkContains(record.getUiDesigner())) {
-                if (task.getEstimateDate() != null) {
-                    record.setUiEstimateDate(task.getEstimateDate());
-                }
-                if (task.getFinishedDate() != null) {
-                    record.setUiFinishedDate(task.getFinishedDate());
-                }
-            } else {
+            if (!record.getUiRequired() || !this.checkContains(record.getUiDesigner())) {
                 throw new BadRequestException(errorMessage);
+            }
+            if (task.getEstimateDate() != null) {
+                if (record.getUiEstimateDate() != null) {
+                    throw new BadRequestException(errorMessage2);
+                }
+                record.setUiEstimateDate(task.getEstimateDate());
+            }
+            if (task.getFinishedDate() != null) {
+                record.setUiFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "android")) {
-            if (record.getAndroidRequired() && this.checkContains(record.getAndroidDeveloper())) {
-                if (task.getEstimateDate() != null) {
-                    record.setAndroidEstimateDate(task.getEstimateDate());
-                }
-                if (task.getFinishedDate() != null) {
-                    record.setAndroidFinishedDate(task.getFinishedDate());
-                }
-            } else {
+            if (!record.getAndroidRequired() || !this.checkContains(record.getAndroidDeveloper())) {
                 throw new BadRequestException(errorMessage);
+            }
+            if (task.getEstimateDate() != null) {
+                if (record.getAndroidEstimateDate() != null) {
+                    throw new BadRequestException(errorMessage2);
+                }
+                record.setAndroidEstimateDate(task.getEstimateDate());
+            }
+            if (task.getFinishedDate() != null) {
+                record.setAndroidFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "ios")) {
-            if (record.getIosRequired() && this.checkContains(record.getIosDeveloper())) {
-                if (task.getEstimateDate() != null) {
-                    record.setIosEstimateDate(task.getEstimateDate());
-                }
-                if (task.getFinishedDate() != null) {
-                    record.setIosFinishedDate(task.getFinishedDate());
-                }
-            } else {
+            if (!record.getIosRequired() || !this.checkContains(record.getIosDeveloper())) {
                 throw new BadRequestException(errorMessage);
+            }
+            if (task.getEstimateDate() != null) {
+                if (record.getIosEstimateDate() != null) {
+                    throw new BadRequestException(errorMessage2);
+                }
+                record.setIosEstimateDate(task.getEstimateDate());
+            }
+            if (task.getFinishedDate() != null) {
+                record.setIosFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "web")) {
-            if (record.getWebRequired() && this.checkContains(record.getWebDeveloper())) {
-                if (task.getEstimateDate() != null) {
-                    record.setWebEstimateDate(task.getEstimateDate());
-                }
-                if (task.getFinishedDate() != null) {
-                    record.setWebFinishedDate(task.getFinishedDate());
-                }
-            } else {
+            if (!record.getWebRequired() || !this.checkContains(record.getWebDeveloper())) {
                 throw new BadRequestException(errorMessage);
+            }
+            if (task.getEstimateDate() != null) {
+                if (record.getWebEstimateDate() != null) {
+                    throw new BadRequestException(errorMessage2);
+                }
+                record.setWebEstimateDate(task.getEstimateDate());
+            }
+            if (task.getFinishedDate() != null) {
+                record.setWebFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "dev")) {
-            if (record.getServerRequired() && this.checkContains(record.getServerDeveloper())) {
-                if (task.getEstimateDate() != null) {
-                    record.setServerEstimateDate(task.getEstimateDate());
-                }
-                if (task.getFinishedDate() != null) {
-                    record.setServerFinishedDate(task.getFinishedDate());
-                }
-            } else {
+            if (!record.getServerRequired() || !this.checkContains(record.getServerDeveloper())) {
                 throw new BadRequestException(errorMessage);
             }
+            if (task.getEstimateDate() != null) {
+                if (record.getServerEstimateDate() != null) {
+                    throw new BadRequestException(errorMessage2);
+                }
+                record.setServerEstimateDate(task.getEstimateDate());
+            }
+            if (task.getFinishedDate() != null) {
+                record.setServerFinishedDate(task.getFinishedDate());
+            }
         } else if (Objects.equals(currentPostCode, "test")) {
-            if (record.getTestRequired() && this.checkContains(record.getTester())) {
-                if (task.getEstimateDate() != null) {
-                    record.setTestEstimateDate(task.getEstimateDate());
-                }
-                if (task.getFinishedDate() != null) {
-                    record.setTestFinishedDate(task.getFinishedDate());
-                }
-            } else {
+            if (!record.getTestRequired() || !this.checkContains(record.getTester())) {
                 throw new BadRequestException(errorMessage);
+            }
+            if (task.getEstimateDate() != null) {
+                if (record.getTestEstimateDate() != null) {
+                    throw new BadRequestException(errorMessage2);
+                }
+                record.setTestEstimateDate(task.getEstimateDate());
+            }
+            if (task.getFinishedDate() != null) {
+                record.setTestFinishedDate(task.getFinishedDate());
             }
         }
     }
@@ -451,7 +476,7 @@ public class TaskService {
     /**
      * 所有开发都完成与否
      *
-     * @param record 数据库的
+     * @param record 数据库中的
      */
     private void allCompleteHandler(Task record) {
         boolean allComplete = true;
@@ -488,7 +513,7 @@ public class TaskService {
      */
     private boolean checkContains(String developer) {
         String currentUserName = UserCache.getCurrentUserName();
-        return Arrays.stream(developer.split(",")).anyMatch(d -> Objects.equals(d, currentUserName));
+        return Arrays.stream(developer.split(",")).anyMatch(dev -> Objects.equals(dev, currentUserName));
     }
 
     /**
