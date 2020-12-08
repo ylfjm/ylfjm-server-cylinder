@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 描述：TODO
+ * 描述：任务
  *
  * @Author YLFJM
  * @Date 2020/11/6
@@ -195,7 +195,7 @@ public class TaskService {
     /**
      * 分页查询任务信息，可带查询条件
      *
-     * @param status   任务状态：wait-未开始、doing-进行中、done-已完成、pause-已暂停、cancel-已取消、closed-已关闭
+     * @param status   任务状态：doing-进行中、done-已完成、cancel-已取消、closed-已关闭
      * @param pageNum  第几页
      * @param pageSize 每页大小
      */

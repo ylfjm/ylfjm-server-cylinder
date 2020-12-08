@@ -55,9 +55,6 @@ public class MenuService {
         if (!StringUtils.hasText(menu.getName())) {
             throw new BadRequestException("操作失败，菜单名不能为空");
         }
-        if (!StringUtils.hasText(menu.getUrl())) {
-            throw new BadRequestException("操作失败，菜单地址不能为空");
-        }
         if (menu.getPid() == null || menu.getPid() == 0) {
             menu.setPid(0);
             menu.setLevel(1);//一级菜单
@@ -80,12 +77,14 @@ public class MenuService {
         if (count > 0) {
             throw new BadRequestException("操作失败，同一个父级菜单下子菜单名不能重复");
         }
-        query.setName(null);
-        query.setPid(null);
-        query.setUrl(menu.getUrl());
-        count = menuMapper.selectCount(query);
-        if (count > 0) {
-            throw new BadRequestException("操作失败，菜单URL已存在");
+        if (StringUtils.hasText(menu.getUrl())) {
+            query.setName(null);
+            query.setPid(null);
+            query.setUrl(menu.getUrl());
+            count = menuMapper.selectCount(query);
+            if (count > 0) {
+                throw new BadRequestException("操作失败，菜单URL已存在");
+            }
         }
         menu.setCreator(UserCache.getCurrentRealName());
         menu.setCreateTime(new Date());
@@ -142,9 +141,6 @@ public class MenuService {
         if (!StringUtils.hasText(menu.getName())) {
             throw new BadRequestException("操作失败，菜单名不能为空");
         }
-        if (!StringUtils.hasText(menu.getUrl())) {
-            throw new BadRequestException("操作失败，菜单地址不能为空");
-        }
         Menu record = menuMapper.selectByPrimaryKey(menu.getId());
         if (record == null) {
             throw new BadRequestException("操作失败，菜单不存在或已被删除");
@@ -175,13 +171,15 @@ public class MenuService {
             throw new BadRequestException("操作失败，同一个父级菜单下子菜单名不能重复");
         }
         // 校验菜单URL是否已经存在
-        Example example2 = new Example(Menu.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andNotEqualTo("id", menu.getId());
-        criteria2.andEqualTo("url", menu.getUrl());
-        count = menuMapper.selectCountByExample(example2);
-        if (count > 0) {
-            throw new BadRequestException("操作失败，菜单URL已存在");
+        if (StringUtils.hasText(menu.getUrl())) {
+            Example example2 = new Example(Menu.class);
+            Example.Criteria criteria2 = example2.createCriteria();
+            criteria2.andNotEqualTo("id", menu.getId());
+            criteria2.andEqualTo("url", menu.getUrl());
+            count = menuMapper.selectCountByExample(example2);
+            if (count > 0) {
+                throw new BadRequestException("操作失败，菜单URL已存在");
+            }
         }
         menu.setUpdater(UserCache.getCurrentRealName());
         menu.setUpdateTime(new Date());
