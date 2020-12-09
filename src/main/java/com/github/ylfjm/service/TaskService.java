@@ -52,6 +52,7 @@ public class TaskService {
         Date now = new Date();
         //校验
         this.check(task);
+        this.emptyStringToNull(task);
         this.setRequired(task);
         this.setLastEdited(task, now);
         task.setId(null);
@@ -106,6 +107,7 @@ public class TaskService {
         }
         //校验
         this.check(task);
+        this.emptyStringToNull(task);
         String richText = this.buildTextForUpdate(record, task, new StringBuffer());
         this.copyBasic(task, record);
         this.copyDeveloper(task, record);
@@ -131,13 +133,14 @@ public class TaskService {
     public void updateStatus(String actionType, Task task) {
         Date now = new Date();
         String text;
-        String richText = null;
+        String richText;
         Task record = taskMapper.selectByPrimaryKey(task.getId());
         if (record == null) {
             throw new NotFoundException("操作失败，任务不存在或已被删除");
         }
         if (Objects.equals(actionType, TaskActionType.assign.name())) {
             text = "指派";
+            this.emptyStringToNull(task);
             richText = this.buildRichTextForAssign(record, task, new StringBuffer());
             this.copyDeveloper(task, record);
             this.setRequired(record);
@@ -257,6 +260,21 @@ public class TaskService {
         toTask.setDeadline(fromTask.getDeadline());
         toTask.setName(fromTask.getName());
         toTask.setRichText(fromTask.getRichText());
+    }
+
+    /**
+     * 前端传的值是""，把它变成null
+     *
+     * @param toTask 前端传参
+     */
+    private void emptyStringToNull(Task toTask) {
+        toTask.setPdDesigner(StringUtils.hasText(toTask.getPdDesigner()) ? toTask.getPdDesigner() : null);
+        toTask.setUiDesigner(StringUtils.hasText(toTask.getUiDesigner()) ? toTask.getUiDesigner() : null);
+        toTask.setWebDeveloper(StringUtils.hasText(toTask.getWebDeveloper()) ? toTask.getWebDeveloper() : null);
+        toTask.setAndroidDeveloper(StringUtils.hasText(toTask.getAndroidDeveloper()) ? toTask.getAndroidDeveloper() : null);
+        toTask.setIosDeveloper(StringUtils.hasText(toTask.getIosDeveloper()) ? toTask.getIosDeveloper() : null);
+        toTask.setServerDeveloper(StringUtils.hasText(toTask.getServerDeveloper()) ? toTask.getServerDeveloper() : null);
+        toTask.setTester(StringUtils.hasText(toTask.getTester()) ? toTask.getTester() : null);
     }
 
     /**
