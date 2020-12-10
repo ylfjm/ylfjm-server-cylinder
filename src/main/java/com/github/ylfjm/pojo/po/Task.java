@@ -121,6 +121,8 @@ public class Task {
     private Boolean deleted;
 
     @Transient
+    private String projectName;
+    @Transient
     private String remark;
     @Transient
     private Date estimateDate;

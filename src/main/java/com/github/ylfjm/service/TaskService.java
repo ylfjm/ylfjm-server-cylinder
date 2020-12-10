@@ -198,6 +198,10 @@ public class TaskService {
         if (task == null) {
             throw new BadRequestException("查询失败，任务不存在或已被删除");
         }
+        Project project = projectMapper.selectByPrimaryKey(task.getProjectId());
+        if (project != null) {
+            task.setProjectName(project.getName());
+        }
         return task;
     }
 
