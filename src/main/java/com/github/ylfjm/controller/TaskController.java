@@ -90,10 +90,10 @@ public class TaskController {
      * @param pageSize 每页大小
      */
     @GetMapping(value = "/task/{pageNum}/{pageSize}")
-    public PageVO<Task> page(@RequestParam(required = false) String status,
+    public PageVO<Task> page(@RequestParam(required = false) String searchType,
                              @PathVariable Integer pageNum,
                              @PathVariable Integer pageSize) {
-        return taskService.page(status, pageNum, pageSize);
+        return taskService.page(searchType, pageNum, pageSize);
     }
 
     /**

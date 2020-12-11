@@ -15,14 +15,16 @@ import com.github.ylfjm.pojo.po.Project;
 import com.github.ylfjm.pojo.po.Task;
 import com.github.ylfjm.pojo.po.TaskActionType;
 import com.github.ylfjm.pojo.po.TaskRemark;
+import com.github.ylfjm.pojo.po.TaskSearchType;
 import com.github.ylfjm.pojo.po.TaskStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import tk.mybatis.mapper.entity.Example;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -208,14 +210,39 @@ public class TaskService {
     /**
      * 分页查询任务信息，可带查询条件
      *
-     * @param status   任务状态：doing-进行中、done-已完成、cancel-已取消、closed-已关闭
-     * @param pageNum  第几页
-     * @param pageSize 每页大小
+     * @param searchType 搜索类型：all-所有、assign-指派给我的、doing-进行中、done-已完成、cancel-已取消、closed-已关闭
+     * @param pageNum    第几页
+     * @param pageSize   每页大小
      */
-    public PageVO<Task> page(String status, int pageNum, int pageSize) {
+    public PageVO<Task> page(String searchType, int pageNum, int pageSize) {
+        Example example = new Example(Task.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("deleted", 0);
+        List<String> statusList = new ArrayList<>();
+        String developer = null;
+        if (Objects.equals(searchType, TaskSearchType.all.name())) {
+            statusList.add(TaskStatus.doing.name());
+            statusList.add(TaskStatus.done.name());
+            statusList.add(TaskStatus.cancel.name());
+            statusList.add(TaskStatus.closed.name());
+        } else if (Objects.equals(searchType, TaskSearchType.assignMe.name())) {
+            developer = UserCache.getCurrentUserName();
+        } else if (Objects.equals(searchType, TaskSearchType.notClosed.name())) {
+            statusList.add(TaskStatus.doing.name());
+            statusList.add(TaskStatus.done.name());
+            statusList.add(TaskStatus.cancel.name());
+        } else if (Objects.equals(searchType, TaskSearchType.doing.name())) {
+            statusList.add(TaskStatus.doing.name());
+        } else if (Objects.equals(searchType, TaskSearchType.done.name())) {
+            statusList.add(TaskStatus.done.name());
+        } else if (Objects.equals(searchType, TaskSearchType.cancel.name())) {
+            statusList.add(TaskStatus.cancel.name());
+        } else if (Objects.equals(searchType, TaskSearchType.closed.name())) {
+            statusList.add(TaskStatus.closed.name());
+        }
         // 分页查询
         PageHelper.startPage(pageNum, pageSize);
-        Page<Task> page = taskMapper.selectPage(status);
+        Page<Task> page = taskMapper.selectPage(statusList, developer);
         return new PageVO<>(pageNum, page);
     }
 
@@ -395,11 +422,12 @@ public class TaskService {
      */
     private void doEstimateOrComplete(Task task, Task record) {
         String currentPostCode = UserCache.getCurrentPostCode();
+        String currentUserName = UserCache.getCurrentUserName();
         String errorMessage = "操作失败，该任务没有指派给你";
         String errorMessage2 = "操作失败，预计完成时间不支持二次修改";
         if (Objects.equals(currentPostCode, "po")) {
             //任务没有指派给某职位或当前用户不在指派列表
-            if (!record.getPdRequired() || !this.checkContains(record.getPdDesigner())) {
+            if (!record.getPdRequired() || !Objects.equals(record.getPdDesigner(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
             //设置预计完成时间
@@ -415,7 +443,7 @@ public class TaskService {
                 record.setPdFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "ui")) {
-            if (!record.getUiRequired() || !this.checkContains(record.getUiDesigner())) {
+            if (!record.getUiRequired() || !Objects.equals(record.getUiDesigner(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
             if (task.getEstimateDate() != null) {
@@ -428,7 +456,7 @@ public class TaskService {
                 record.setUiFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "android")) {
-            if (!record.getAndroidRequired() || !this.checkContains(record.getAndroidDeveloper())) {
+            if (!record.getAndroidRequired() || !Objects.equals(record.getAndroidDeveloper(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
             if (task.getEstimateDate() != null) {
@@ -441,7 +469,7 @@ public class TaskService {
                 record.setAndroidFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "ios")) {
-            if (!record.getIosRequired() || !this.checkContains(record.getIosDeveloper())) {
+            if (!record.getIosRequired() || !Objects.equals(record.getIosDeveloper(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
             if (task.getEstimateDate() != null) {
@@ -454,7 +482,7 @@ public class TaskService {
                 record.setIosFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "web")) {
-            if (!record.getWebRequired() || !this.checkContains(record.getWebDeveloper())) {
+            if (!record.getWebRequired() || !Objects.equals(record.getWebDeveloper(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
             if (task.getEstimateDate() != null) {
@@ -467,7 +495,7 @@ public class TaskService {
                 record.setWebFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "dev")) {
-            if (!record.getServerRequired() || !this.checkContains(record.getServerDeveloper())) {
+            if (!record.getServerRequired() || !Objects.equals(record.getServerDeveloper(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
             if (task.getEstimateDate() != null) {
@@ -480,7 +508,7 @@ public class TaskService {
                 record.setServerFinishedDate(task.getFinishedDate());
             }
         } else if (Objects.equals(currentPostCode, "test")) {
-            if (!record.getTestRequired() || !this.checkContains(record.getTester())) {
+            if (!record.getTestRequired() || !Objects.equals(record.getTester(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
             if (task.getEstimateDate() != null) {
@@ -535,7 +563,7 @@ public class TaskService {
      */
     private boolean checkContains(String developer) {
         String currentUserName = UserCache.getCurrentUserName();
-        return Arrays.stream(developer.split(",")).anyMatch(dev -> Objects.equals(dev, currentUserName));
+        return Objects.equals(developer, currentUserName);
     }
 
     /**

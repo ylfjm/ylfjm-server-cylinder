@@ -5,8 +5,22 @@
 
     <select id="selectPage" resultType="com.github.ylfjm.pojo.po.Task">
         select * from task where deleted = 0
-        <if test="status != null and status != ''">
-            and `status` = #{status}
+        <if test="statusList!=null and statusList.size>0">
+            and status in
+            <foreach collection="statusList" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="developer!=null and developer!=''">
+            and (
+            pd_designer = #{developer}
+            or ui_designer = #{developer}
+            or web_developer = #{developer}
+            or android_developer = #{developer}
+            or ios_developer = #{developer}
+            or server_developer = #{developer}
+            or tester = #{developer}
+            )
         </if>
     </select>
 
