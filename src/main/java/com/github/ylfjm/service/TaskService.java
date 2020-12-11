@@ -121,7 +121,12 @@ public class TaskService {
         }
         String text = "编辑";
         if (StringUtils.hasText(richText)) {
+            if (StringUtils.hasText(task.getRemark())) {
+                richText += task.getRemark();
+            }
             this.addTaskRemark(task.getId(), text, richText, now);
+        } else if (StringUtils.hasText(task.getRemark())) {
+            this.addTaskRemark(task.getId(), text, task.getRemark(), now);
         }
     }
 
@@ -147,7 +152,12 @@ public class TaskService {
             this.copyDeveloper(task, record);
             this.setRequired(record);
             if (StringUtils.hasText(richText)) {
+                if (StringUtils.hasText(task.getRemark())) {
+                    richText += task.getRemark();
+                }
                 this.addTaskRemark(task.getId(), text, richText, now);
+            } else if (StringUtils.hasText(task.getRemark())) {
+                this.addTaskRemark(task.getId(), text, task.getRemark(), now);
             }
         } else if (Objects.equals(actionType, TaskActionType.estimate.name())) {
             text = "排期";
@@ -291,6 +301,24 @@ public class TaskService {
         toTask.setDeadline(fromTask.getDeadline());
         toTask.setName(fromTask.getName());
         toTask.setRichText(fromTask.getRichText());
+        toTask.setCanceledBy(fromTask.getCanceledBy());
+        toTask.setCanceledDate(fromTask.getCanceledDate());
+        toTask.setClosedBy(fromTask.getClosedBy());
+        toTask.setClosedDate(fromTask.getClosedDate());
+        toTask.setPdEstimateDate(fromTask.getPdEstimateDate());
+        toTask.setPdFinishedDate(fromTask.getPdFinishedDate());
+        toTask.setUiEstimateDate(fromTask.getUiEstimateDate());
+        toTask.setUiFinishedDate(fromTask.getUiFinishedDate());
+        toTask.setWebEstimateDate(fromTask.getWebEstimateDate());
+        toTask.setWebFinishedDate(fromTask.getWebFinishedDate());
+        toTask.setAndroidEstimateDate(fromTask.getAndroidEstimateDate());
+        toTask.setAndroidFinishedDate(fromTask.getAndroidFinishedDate());
+        toTask.setIosEstimateDate(fromTask.getIosEstimateDate());
+        toTask.setIosFinishedDate(fromTask.getIosFinishedDate());
+        toTask.setServerEstimateDate(fromTask.getServerEstimateDate());
+        toTask.setServerFinishedDate(fromTask.getServerFinishedDate());
+        toTask.setTestEstimateDate(fromTask.getTestEstimateDate());
+        toTask.setTestFinishedDate(fromTask.getTestFinishedDate());
     }
 
     /**
@@ -364,8 +392,12 @@ public class TaskService {
                         .append("\"，新值为\"").append(toProject.getName()).append("\"。<br/>");
             }
         }
+        if (!Objects.equals(dbTask.getType(), task.getType())) {
+            sb.append("修改了 <strong><em>任务类型</em></strong>，旧值为\"").append(dbTask.getType())
+                    .append("\"，新值为\"").append(task.getType()).append("\"。<br/>");
+        }
         if (!Objects.equals(dbTask.getPri(), task.getPri())) {
-            sb.append("修改了 <strong><em>任务类型</em></strong>，旧值为\"").append(dbTask.getPri())
+            sb.append("修改了 <strong><em>优先级</em></strong>，旧值为\"").append(dbTask.getPri())
                     .append("\"，新值为\"").append(task.getPri()).append("\"。<br/>");
         }
         if (!Objects.equals(dbTask.getDeadline(), task.getDeadline())) {
