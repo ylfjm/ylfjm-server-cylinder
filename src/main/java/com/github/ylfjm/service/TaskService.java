@@ -60,8 +60,8 @@ public class TaskService {
         task.setId(null);
         task.setStatus(TaskStatus.doing.name());
         task.setDeleted(false);
-        task.setOpenedBy(UserCache.getCurrentUserName());
-        task.setOpenedDate(now);
+        task.setCreateBy(UserCache.getCurrentUserName());
+        task.setCreateDate(now);
         int result = taskMapper.insertSelective(task);
         if (result < 1) {
             throw new YlfjmException("操作失败，创建任务发生错误");
@@ -137,7 +137,7 @@ public class TaskService {
      * @param task       前端传参
      */
     @Transactional(rollbackFor = Exception.class)
-    public void updateStatus(String actionType, Task task) {
+    public void action(String actionType, Task task) {
         Date now = new Date();
         String text;
         String richText;
@@ -453,7 +453,7 @@ public class TaskService {
      * @param record 数据库中的
      */
     private void doEstimateOrComplete(Task task, Task record) {
-        String currentPostCode = UserCache.getCurrentPostCode();
+        String currentPostCode = task.getCurrentPostCode();
         String currentUserName = UserCache.getCurrentUserName();
         String errorMessage = "操作失败，该任务没有指派给你";
         String errorMessage2 = "操作失败，预计完成时间不支持二次修改";

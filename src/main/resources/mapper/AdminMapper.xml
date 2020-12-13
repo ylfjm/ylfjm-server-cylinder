@@ -39,7 +39,7 @@
             and a.dept_id = #{deptId}
         </if>
         <if test="postCode != null and postCode != ''">
-            and a.post_code = #{postCode}
+            and a.post_code like CONCAT('%', #{postCode}, '%')
         </if>
         <if test="realName != null and realName != ''">
             and a.real_name like CONCAT('%', #{realName}, '%')

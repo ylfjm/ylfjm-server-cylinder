@@ -22,6 +22,7 @@
             or tester = #{developer}
             )
         </if>
+        order by create_date desc
     </select>
 
 </mapper>

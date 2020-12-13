@@ -68,8 +68,8 @@ public class TaskController {
      * @param task       任务
      */
     @PutMapping(value = "/task/{actionType}/action")
-    public void update(@PathVariable String actionType, @RequestBody Task task) {
-        taskService.updateStatus(actionType, task);
+    public void action(@PathVariable String actionType, @RequestBody Task task) {
+        taskService.action(actionType, task);
     }
 
     /**
