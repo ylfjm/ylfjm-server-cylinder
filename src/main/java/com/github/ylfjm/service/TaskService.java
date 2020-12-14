@@ -220,7 +220,7 @@ public class TaskService {
     /**
      * 分页查询任务信息，可带查询条件
      *
-     * @param searchType 搜索类型：all-所有、assign-指派给我的、doing-进行中、done-已完成、cancel-已取消、closed-已关闭
+     * @param searchType 搜索类型 {@link TaskSearchType}
      * @param pageNum    第几页
      * @param pageSize   每页大小
      */
