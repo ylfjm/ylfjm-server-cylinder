@@ -11,6 +11,7 @@ import com.github.ylfjm.common.utils.DateUtil;
 import com.github.ylfjm.mapper.ProjectMapper;
 import com.github.ylfjm.mapper.TaskMapper;
 import com.github.ylfjm.mapper.TaskRemarkMapper;
+import com.github.ylfjm.pojo.dto.TaskQueryDTO;
 import com.github.ylfjm.pojo.po.Project;
 import com.github.ylfjm.pojo.po.Task;
 import com.github.ylfjm.pojo.po.TaskActionType;
@@ -220,11 +221,12 @@ public class TaskService {
     /**
      * 分页查询任务信息，可带查询条件
      *
-     * @param searchType 搜索类型 {@link TaskSearchType}
-     * @param pageNum    第几页
-     * @param pageSize   每页大小
+     * @param taskQueryDTO 搜索类型 {@link TaskQueryDTO}
+     * @param pageNum      第几页
+     * @param pageSize     每页大小
      */
-    public PageVO<Task> page(String searchType, int pageNum, int pageSize) {
+    public PageVO<Task> page(TaskQueryDTO taskQueryDTO, int pageNum, int pageSize) {
+        String searchType = taskQueryDTO.getSearchType();
         Example example = new Example(Task.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("deleted", 0);
@@ -250,9 +252,11 @@ public class TaskService {
         } else if (Objects.equals(searchType, TaskSearchType.closed.name())) {
             statusList.add(TaskStatus.closed.name());
         }
+        taskQueryDTO.setStatusList(statusList);
+        taskQueryDTO.setDeveloper(developer);
         // 分页查询
         PageHelper.startPage(pageNum, pageSize);
-        Page<Task> page = taskMapper.selectPage(statusList, developer);
+        Page<Task> page = taskMapper.selectPage(taskQueryDTO);
         return new PageVO<>(pageNum, page);
     }
 

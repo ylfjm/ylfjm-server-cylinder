@@ -1,6 +1,7 @@
 package com.github.ylfjm.controller;
 
 import com.github.ylfjm.common.pojo.vo.PageVO;
+import com.github.ylfjm.pojo.dto.TaskQueryDTO;
 import com.github.ylfjm.pojo.po.Task;
 import com.github.ylfjm.pojo.po.TaskActionType;
 import com.github.ylfjm.pojo.po.TaskRemark;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -85,15 +85,15 @@ public class TaskController {
     /**
      * 查询任务列表
      *
-     * @param status   任务状态：wait-未开始、doing-进行中、done-已完成、pause-已暂停、cancel-已取消、closed-已关闭
-     * @param pageNum  第几页
-     * @param pageSize 每页大小
+     * @param taskQueryDTO {@link TaskQueryDTO}
+     * @param pageNum      第几页
+     * @param pageSize     每页大小
      */
     @GetMapping(value = "/task/{pageNum}/{pageSize}")
-    public PageVO<Task> page(@RequestParam(required = false) String searchType,
+    public PageVO<Task> page(TaskQueryDTO taskQueryDTO,
                              @PathVariable Integer pageNum,
                              @PathVariable Integer pageSize) {
-        return taskService.page(searchType, pageNum, pageSize);
+        return taskService.page(taskQueryDTO, pageNum, pageSize);
     }
 
     /**

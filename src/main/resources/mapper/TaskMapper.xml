@@ -22,7 +22,166 @@
             or tester = #{developer}
             )
         </if>
-        order by create_date desc
+        <if test="idSortBy!=null and idSortBy!=''">
+            <if test="idSortBy=='ascending'">
+                order by id asc
+            </if>
+            <if test="idSortBy=='descending'">
+                order by id desc
+            </if>
+        </if>
+        <if test="priSortBy!=null and priSortBy!=''">
+            <if test="priSortBy=='ascending'">
+                order by pri asc
+            </if>
+            <if test="priSortBy=='descending'">
+                order by pri desc
+            </if>
+        </if>
+        <if test="statusSortBy!=null and statusSortBy!=''">
+            <if test="statusSortBy=='ascending'">
+                order by status asc
+            </if>
+            <if test="statusSortBy=='descending'">
+                order by status desc
+            </if>
+        </if>
+        <if test="createBySortBy!=null and createBySortBy!=''">
+            <if test="createBySortBy=='ascending'">
+                order by create_by asc
+            </if>
+            <if test="createBySortBy=='descending'">
+                order by create_by desc
+            </if>
+        </if>
+        <if test="createDateSortBy!=null and createDateSortBy!=''">
+            <if test="createDateSortBy=='ascending'">
+                order by create_date asc
+            </if>
+            <if test="createDateSortBy=='descending'">
+                order by create_date desc
+            </if>
+        </if>
+        <if test="deadlineSortBy!=null and deadlineSortBy!=''">
+            <if test="deadlineSortBy=='ascending'">
+                order by deadline asc
+            </if>
+            <if test="deadlineSortBy=='descending'">
+                order by deadline desc
+            </if>
+        </if>
+        <if test="pdDesignerSortBy!=null and pdDesignerSortBy!=''">
+            <if test="pdDesignerSortBy=='ascending'">
+                order by pd_designer asc
+            </if>
+            <if test="pdDesignerSortBy=='descending'">
+                order by pd_designer desc
+            </if>
+        </if>
+        <if test="pdEstimateDateSortBy!=null and pdEstimateDateSortBy!=''">
+            <if test="pdEstimateDateSortBy=='ascending'">
+                order by pd_estimate_date asc
+            </if>
+            <if test="pdEstimateDateSortBy=='descending'">
+                order by pd_estimate_date desc
+            </if>
+        </if>
+        <if test="uiDesignerSortBy!=null and uiDesignerSortBy!=''">
+            <if test="uiDesignerSortBy=='ascending'">
+                order by ui_designer asc
+            </if>
+            <if test="uiDesignerSortBy=='descending'">
+                order by ui_designer desc
+            </if>
+        </if>
+        <if test="uiEstimateDateSortBy!=null and uiEstimateDateSortBy!=''">
+            <if test="uiEstimateDateSortBy=='ascending'">
+                order by ui_estimate_date asc
+            </if>
+            <if test="uiEstimateDateSortBy=='descending'">
+                order by ui_estimate_date desc
+            </if>
+        </if>
+        <if test="webDeveloperSortBy!=null and webDeveloperSortBy!=''">
+            <if test="webDeveloperSortBy=='ascending'">
+                order by web_developer asc
+            </if>
+            <if test="webDeveloperSortBy=='descending'">
+                order by web_developer desc
+            </if>
+        </if>
+        <if test="webEstimateDateSortBy!=null and webEstimateDateSortBy!=''">
+            <if test="webEstimateDateSortBy=='ascending'">
+                order by web_estimate_date asc
+            </if>
+            <if test="webEstimateDateSortBy=='descending'">
+                order by web_estimate_date desc
+            </if>
+        </if>
+        <if test="androidDeveloperSortBy!=null and androidDeveloperSortBy!=''">
+            <if test="androidDeveloperSortBy=='ascending'">
+                order by android_developer asc
+            </if>
+            <if test="androidDeveloperSortBy=='descending'">
+                order by android_developer desc
+            </if>
+        </if>
+        <if test="androidEstimateDateSortBy!=null and androidEstimateDateSortBy!=''">
+            <if test="androidEstimateDateSortBy=='ascending'">
+                order by android_estimate_date asc
+            </if>
+            <if test="androidEstimateDateSortBy=='descending'">
+                order by android_estimate_date desc
+            </if>
+        </if>
+        <if test="iosDeveloperSortBy!=null and iosDeveloperSortBy!=''">
+            <if test="iosDeveloperSortBy=='ascending'">
+                order by ios_developer asc
+            </if>
+            <if test="iosDeveloperSortBy=='descending'">
+                order by ios_developer desc
+            </if>
+        </if>
+        <if test="iosEstimateDateSortBy!=null and iosEstimateDateSortBy!=''">
+            <if test="iosEstimateDateSortBy=='ascending'">
+                order by ios_estimate_date asc
+            </if>
+            <if test="iosEstimateDateSortBy=='descending'">
+                order by ios_estimate_date desc
+            </if>
+        </if>
+        <if test="serverDeveloperSortBy!=null and serverDeveloperSortBy!=''">
+            <if test="serverDeveloperSortBy=='ascending'">
+                order by server_developer asc
+            </if>
+            <if test="serverDeveloperSortBy=='descending'">
+                order by server_developer desc
+            </if>
+        </if>
+        <if test="serverEstimateDateSortBy!=null and serverEstimateDateSortBy!=''">
+            <if test="serverEstimateDateSortBy=='ascending'">
+                order by server_estimate_date asc
+            </if>
+            <if test="serverEstimateDateSortBy=='descending'">
+                order by server_estimate_date desc
+            </if>
+        </if>
+        <if test="testerSortBy!=null and testerSortBy!=''">
+            <if test="testerSortBy=='ascending'">
+                order by tester asc
+            </if>
+            <if test="testerSortBy=='descending'">
+                order by tester desc
+            </if>
+        </if>
+        <if test="testEstimateDateSortBy!=null and testEstimateDateSortBy!=''">
+            <if test="testEstimateDateSortBy=='ascending'">
+                order by test_estimate_date asc
+            </if>
+            <if test="testEstimateDateSortBy=='descending'">
+                order by test_estimate_date desc
+            </if>
+        </if>
     </select>
 
 </mapper>
