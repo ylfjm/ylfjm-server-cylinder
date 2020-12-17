@@ -1,8 +1,10 @@
 package com.github.ylfjm.pojo.po;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -31,8 +33,12 @@ public class Project {
     private String name;
     //项目代号
     private String code;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")//入参格式化
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")//出参格式化
     //开始日期
     private Date begin;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")//入参格式化
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")//出参格式化
     //截止日期
     private Date end;
     //可用工作日
@@ -40,9 +46,10 @@ public class Project {
     //项目状态：wait-未开始、doing-进行中、suspended-已挂起、closed-已关闭
     private String status;
     //被谁开启
-    private String openedBy;
+    private String createBy;
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")//出参格式化
     //开启时间
-    private Date openedDate;
+    private Date createDate;
     //被谁关闭
     private String closedBy;
     //关闭时间
