@@ -3,7 +3,7 @@
 
 <mapper namespace="com.github.ylfjm.mapper.TaskMapper">
 
-    <select id="selectPage" resultType="com.github.ylfjm.pojo.po.Task">
+    <!--<select id="selectPage" resultType="com.github.ylfjm.pojo.po.Task">
         select * from task where deleted = 0
         <if test="statusList!=null and statusList.size>0">
             and status in
@@ -182,6 +182,6 @@
                 order by test_estimate_date desc
             </if>
         </if>
-    </select>
+    </select>-->
 
 </mapper>

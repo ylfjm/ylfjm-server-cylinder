@@ -3,8 +3,6 @@ package com.github.ylfjm.pojo.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 /**
  * 描述：任务查询参数封装实体类
  *
@@ -14,9 +12,6 @@ import java.util.List;
 @Getter
 @Setter
 public class TaskQueryDTO {
-
-    private List<String> statusList;
-    private String developer;
 
     private String searchType;
 

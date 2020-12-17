@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 
@@ -227,9 +228,6 @@ public class TaskService {
      */
     public PageVO<Task> page(TaskQueryDTO taskQueryDTO, int pageNum, int pageSize) {
         String searchType = taskQueryDTO.getSearchType();
-        Example example = new Example(Task.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("deleted", 0);
         List<String> statusList = new ArrayList<>();
         String developer = null;
         if (Objects.equals(searchType, TaskSearchType.all.name())) {
@@ -252,11 +250,24 @@ public class TaskService {
         } else if (Objects.equals(searchType, TaskSearchType.closed.name())) {
             statusList.add(TaskStatus.closed.name());
         }
-        taskQueryDTO.setStatusList(statusList);
-        taskQueryDTO.setDeveloper(developer);
-        // 分页查询
+        Example example = new Example(Task.class);
+        example.and().andEqualTo("deleted", 0);
+        if (!CollectionUtils.isEmpty(statusList)) {
+            example.and().andIn("status", statusList);
+        }
+        if (StringUtils.hasText(developer)) {
+            example.and().andEqualTo("pdDesigner", developer)
+                    .orEqualTo("uiDesigner", developer)
+                    .orEqualTo("webDeveloper", developer)
+                    .orEqualTo("androidDeveloper", developer)
+                    .orEqualTo("iosDeveloper", developer)
+                    .orEqualTo("serverDeveloper", developer)
+                    .orEqualTo("tester", developer);
+        }
+        //组件排序SQL
+        this.buildOrderBy(taskQueryDTO, example);
         PageHelper.startPage(pageNum, pageSize);
-        Page<Task> page = taskMapper.selectPage(taskQueryDTO);
+        Page<Task> page = (Page<Task>) taskMapper.selectByExample(example);
         return new PageVO<>(pageNum, page);
     }
 
@@ -589,6 +600,57 @@ public class TaskService {
         }
         if (allComplete) {
             record.setStatus(TaskStatus.done.name());
+        }
+    }
+
+    /**
+     * 组件排序SQL
+     *
+     * @param taskQueryDTO 查询参数
+     * @param example      Mybatis Example
+     */
+    private void buildOrderBy(TaskQueryDTO taskQueryDTO, Example example) {
+        String ending = "ending";
+        if (StringUtils.hasText(taskQueryDTO.getIdSortBy())) {
+            example.setOrderByClause("id " + taskQueryDTO.getIdSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getPriSortBy())) {
+            example.setOrderByClause("pri " + taskQueryDTO.getPriSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getStatusSortBy())) {
+            example.setOrderByClause("status " + taskQueryDTO.getStatusSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getCreateBySortBy())) {
+            example.setOrderByClause("create_by " + taskQueryDTO.getCreateBySortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getCreateDateSortBy())) {
+            example.setOrderByClause("create_date " + taskQueryDTO.getCreateDateSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getDeadlineSortBy())) {
+            example.setOrderByClause("deadline " + taskQueryDTO.getDeadlineSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getPdDesignerSortBy())) {
+            example.setOrderByClause("pd_designer " + taskQueryDTO.getPdDesignerSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getPdEstimateDateSortBy())) {
+            example.setOrderByClause("pd_estimate_date " + taskQueryDTO.getPdEstimateDateSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getUiDesignerSortBy())) {
+            example.setOrderByClause("ui_designer " + taskQueryDTO.getUiDesignerSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getUiEstimateDateSortBy())) {
+            example.setOrderByClause("ui_estimate_date " + taskQueryDTO.getUiEstimateDateSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getWebDeveloperSortBy())) {
+            example.setOrderByClause("web_developer " + taskQueryDTO.getWebDeveloperSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getWebEstimateDateSortBy())) {
+            example.setOrderByClause("web_estimate_date " + taskQueryDTO.getWebEstimateDateSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getAndroidDeveloperSortBy())) {
+            example.setOrderByClause("android_developer " + taskQueryDTO.getAndroidDeveloperSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getAndroidEstimateDateSortBy())) {
+            example.setOrderByClause("android_estimate_date " + taskQueryDTO.getAndroidEstimateDateSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getIosDeveloperSortBy())) {
+            example.setOrderByClause("ios_developer " + taskQueryDTO.getIosDeveloperSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getIosEstimateDateSortBy())) {
+            example.setOrderByClause("ios_estimate_date " + taskQueryDTO.getIosEstimateDateSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getServerDeveloperSortBy())) {
+            example.setOrderByClause("server_developer " + taskQueryDTO.getServerDeveloperSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getServerEstimateDateSortBy())) {
+            example.setOrderByClause("server_estimate_date " + taskQueryDTO.getServerEstimateDateSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getTesterSortBy())) {
+            example.setOrderByClause("tester " + taskQueryDTO.getTesterSortBy().replace(ending, ""));
+        } else if (StringUtils.hasText(taskQueryDTO.getTestEstimateDateSortBy())) {
+            example.setOrderByClause("test_estimate_date " + taskQueryDTO.getTestEstimateDateSortBy().replace(ending, ""));
         }
     }
 
