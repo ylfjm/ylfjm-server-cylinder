@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.github.ylfjm.mapper.DailyMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into daily (
+        project_id,
+        project_name,
+        post_code,
+        post_name,
+        content,
+        create_by,
+        create_date
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.projectId},
+            #{item.projectName},
+            #{item.postCode},
+            #{item.postName},
+            #{item.content},
+            #{item.createBy},
+            #{item.createDate}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectCreateDatePage" resultType="com.github.ylfjm.pojo.vo.DailyDateVO">
+        select DISTINCT DATE_FORMAT(create_date,"%Y-%m-%d") as `date` from daily order by DATE_FORMAT(create_date,"%Y-%m-%d") desc
+    </select>
+
+    <select id="selectDaily" resultType="com.github.ylfjm.pojo.dto.DailyDTO">
+        select
+            project_id,
+            project_name,
+            post_code,
+            post_name,
+            content,
+            DATE_FORMAT(create_date,"%Y-%m-%d") as createDate
+        from
+            daily
+        where
+            DATE_FORMAT(create_date,"%Y-%m-%d") in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item.date}
+        </foreach>
+        order by project_id, post_code
+    </select>
+
+</mapper>

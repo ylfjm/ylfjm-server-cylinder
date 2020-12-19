@@ -12,6 +12,7 @@ import com.github.ylfjm.mapper.ProjectMapper;
 import com.github.ylfjm.mapper.TaskMapper;
 import com.github.ylfjm.mapper.TaskRemarkMapper;
 import com.github.ylfjm.pojo.dto.TaskQueryDTO;
+import com.github.ylfjm.pojo.po.PostCode;
 import com.github.ylfjm.pojo.po.Project;
 import com.github.ylfjm.pojo.po.Task;
 import com.github.ylfjm.pojo.po.TaskActionType;
@@ -472,7 +473,7 @@ public class TaskService {
         String currentUserName = UserCache.getCurrentUserName();
         String errorMessage = "操作失败，该任务没有指派给你";
         String errorMessage2 = "操作失败，预计完成时间不支持二次修改";
-        if (Objects.equals(currentPostCode, "po")) {
+        if (Objects.equals(currentPostCode, PostCode.po.getCode())) {
             //任务没有指派给某职位或当前用户不在指派列表
             if (!record.getPdRequired() || !Objects.equals(record.getPdDesigner(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
@@ -489,7 +490,7 @@ public class TaskService {
             if (task.getFinishedDate() != null) {
                 record.setPdFinishedDate(task.getFinishedDate());
             }
-        } else if (Objects.equals(currentPostCode, "ui")) {
+        } else if (Objects.equals(currentPostCode, PostCode.ui.getCode())) {
             if (!record.getUiRequired() || !Objects.equals(record.getUiDesigner(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
@@ -502,7 +503,7 @@ public class TaskService {
             if (task.getFinishedDate() != null) {
                 record.setUiFinishedDate(task.getFinishedDate());
             }
-        } else if (Objects.equals(currentPostCode, "android")) {
+        } else if (Objects.equals(currentPostCode, PostCode.android.getCode())) {
             if (!record.getAndroidRequired() || !Objects.equals(record.getAndroidDeveloper(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
@@ -515,7 +516,7 @@ public class TaskService {
             if (task.getFinishedDate() != null) {
                 record.setAndroidFinishedDate(task.getFinishedDate());
             }
-        } else if (Objects.equals(currentPostCode, "ios")) {
+        } else if (Objects.equals(currentPostCode, PostCode.ios.getCode())) {
             if (!record.getIosRequired() || !Objects.equals(record.getIosDeveloper(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
@@ -528,7 +529,7 @@ public class TaskService {
             if (task.getFinishedDate() != null) {
                 record.setIosFinishedDate(task.getFinishedDate());
             }
-        } else if (Objects.equals(currentPostCode, "web")) {
+        } else if (Objects.equals(currentPostCode, PostCode.web.getCode())) {
             if (!record.getWebRequired() || !Objects.equals(record.getWebDeveloper(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
@@ -541,7 +542,7 @@ public class TaskService {
             if (task.getFinishedDate() != null) {
                 record.setWebFinishedDate(task.getFinishedDate());
             }
-        } else if (Objects.equals(currentPostCode, "dev")) {
+        } else if (Objects.equals(currentPostCode, PostCode.dev.getCode())) {
             if (!record.getServerRequired() || !Objects.equals(record.getServerDeveloper(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
@@ -554,7 +555,7 @@ public class TaskService {
             if (task.getFinishedDate() != null) {
                 record.setServerFinishedDate(task.getFinishedDate());
             }
-        } else if (Objects.equals(currentPostCode, "test")) {
+        } else if (Objects.equals(currentPostCode, PostCode.test.getCode())) {
             if (!record.getTestRequired() || !Objects.equals(record.getTester(), currentUserName)) {
                 throw new BadRequestException(errorMessage);
             }
