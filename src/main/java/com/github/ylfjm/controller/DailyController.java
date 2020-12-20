@@ -1,5 +1,6 @@
 package com.github.ylfjm.controller;
 
+import com.github.ylfjm.common.pojo.vo.PageVO;
 import com.github.ylfjm.pojo.dto.DailyDTO;
 import com.github.ylfjm.pojo.vo.DailyDateVO;
 import com.github.ylfjm.service.DailyService;
@@ -10,8 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * 描述：日报
@@ -43,7 +42,7 @@ public class DailyController {
      * @param pageSize 每页大小
      */
     @GetMapping(value = "/daily/{pageNum}/{pageSize}")
-    public List<DailyDateVO> page(@PathVariable Integer pageNum, @PathVariable Integer pageSize) {
+    public PageVO<DailyDateVO> page(@PathVariable Integer pageNum, @PathVariable Integer pageSize) {
         return dailyService.page(pageNum, pageSize);
     }
 

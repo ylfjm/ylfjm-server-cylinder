@@ -30,7 +30,6 @@ public class Daily {
     private Integer projectId;
     private String projectName;
     private String postCode;
-    private String postName;
 
     private String content;
 

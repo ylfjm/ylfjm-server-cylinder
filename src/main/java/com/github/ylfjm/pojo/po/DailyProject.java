@@ -10,23 +10,23 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * 描述：职位
+ * 描述：日报项目
  *
  * @Author Zhang Bo
- * @Date 2020/12/4
+ * @Date 2020/12/19
  */
-@Table(name = "position")
+@Table(name = "daily_project")
 @Getter
 @Setter
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class Position {
+public class DailyProject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     private String name;
-    private String code;
     private Integer sorts;
+    //已删除(0-否,1-是)
+    private Boolean deleted;
 
 }

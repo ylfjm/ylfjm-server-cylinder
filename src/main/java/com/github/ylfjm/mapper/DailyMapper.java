@@ -15,5 +15,7 @@ public interface DailyMapper extends Mapper<Daily> {
 
     Page<DailyDateVO> selectCreateDatePage();
 
-    List<DailyDTO> selectDaily(@Param("list") List<DailyDateVO> list);
+    List<DailyDTO> selectDailyProject(@Param("list") List<DailyDateVO> list);
+
+    List<DailyDTO> selectDailyContent(@Param("list") List<DailyDateVO> list);
 }

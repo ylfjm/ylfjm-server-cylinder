@@ -31,22 +31,36 @@
         select DISTINCT DATE_FORMAT(create_date,"%Y-%m-%d") as `date` from daily order by DATE_FORMAT(create_date,"%Y-%m-%d") desc
     </select>
 
-    <select id="selectDaily" resultType="com.github.ylfjm.pojo.dto.DailyDTO">
-        select
-            project_id,
-            project_name,
-            post_code,
-            post_name,
-            content,
-            DATE_FORMAT(create_date,"%Y-%m-%d") as createDate
+    <select id="selectDailyProject" resultType="com.github.ylfjm.pojo.dto.DailyDTO">
+        select DISTINCT
+            d.project_id,
+            d.project_name,
+            DATE_FORMAT(d.create_date,"%Y-%m-%d") as createDate
         from
-            daily
+            daily d inner join daily_project dp on d.project_id = dp.id
         where
-            DATE_FORMAT(create_date,"%Y-%m-%d") in
+            DATE_FORMAT(d.create_date,"%Y-%m-%d") in
         <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
             #{item.date}
         </foreach>
-        order by project_id, post_code
+        order by dp.sorts desc
+    </select>
+
+    <select id="selectDailyContent" resultType="com.github.ylfjm.pojo.dto.DailyDTO">
+        select DISTINCT
+            d.id,
+            d.project_id,
+            d.post_code,
+            d.content,
+            DATE_FORMAT(d.create_date,"%Y-%m-%d") as createDate
+        from
+            daily d inner join position p on d.post_code = p.code
+        where
+            DATE_FORMAT(d.create_date,"%Y-%m-%d") in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item.date}
+        </foreach>
+        order by p.sorts
     </select>
 
 </mapper>

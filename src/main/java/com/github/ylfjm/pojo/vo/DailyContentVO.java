@@ -15,5 +15,5 @@ public class DailyContentVO {
 
     private Integer id;//日报ID
     private String content;//日报内容
-    private String postName;//职位名称
+    private String postCode;//职位CODE
 }

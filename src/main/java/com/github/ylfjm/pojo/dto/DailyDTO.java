@@ -21,9 +21,10 @@ public class DailyDTO {
     private String currentPostCode;
 
     //返回给前端展示用的数据
+    private Integer id;
     private Integer projectId;
     private String projectName;
-    private String postName;
+    private String postCode;
     private String createDate;
     private String content;
 
