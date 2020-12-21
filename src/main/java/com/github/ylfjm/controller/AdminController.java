@@ -69,6 +69,20 @@ public class AdminController {
     }
 
     /**
+     * 修改密码
+     *
+     * @param adminId            管理员ID
+     * @param password           旧密码
+     * @param newPassword        新密码
+     * @param newPasswordConfirm 确认密码
+     */
+    @PostMapping(value = "/admin/changePassword")
+    public void changePassword(@RequestParam Integer adminId, @RequestParam String password,
+                               @RequestParam String newPassword, @RequestParam String newPasswordConfirm) {
+        adminService.changePassword(adminId, password, newPassword, newPasswordConfirm);
+    }
+
+    /**
      * 查询管理员列表
      *
      * @param pageNum   第几页

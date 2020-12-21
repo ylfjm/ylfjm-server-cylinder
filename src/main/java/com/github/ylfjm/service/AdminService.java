@@ -220,6 +220,40 @@ public class AdminService {
     }
 
     /**
+     * 修改密码
+     *
+     * @param adminId            管理员ID
+     * @param password           旧密码
+     * @param newPassword        新密码
+     * @param newPasswordConfirm 确认密码
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void changePassword(Integer adminId, String password, String newPassword, String newPasswordConfirm) {
+        Admin record = adminMapper.selectByPrimaryKey(adminId);
+        if (record == null) {
+            throw new BadRequestException("操作失败，用户不存在或已被删除");
+        }
+        if (!Objects.equals(password, record.getPassword())) {
+            throw new BadRequestException("操作失败，旧密码不正确");
+        }
+        if (!Objects.equals(newPassword, newPasswordConfirm)) {
+            throw new BadRequestException("操作失败，确认密码输入不正确");
+        }
+        if (Objects.equals(password, newPassword)) {
+            throw new BadRequestException("操作失败，密码没有改变");
+        }
+        Admin update = new Admin();
+        update.setId(adminId);
+        update.setPassword(newPassword);
+        update.setUpdater(UserCache.getCurrentRealName());
+        update.setUpdateTime(new Date());
+        int result = adminMapper.updateByPrimaryKeySelective(update);
+        if (result < 1) {
+            throw new YlfjmException("操作失败，修改密码发生错误");
+        }
+    }
+
+    /**
      * 分页查询管理员信息，可带查询条件
      *
      * @param pageNum   第几页
