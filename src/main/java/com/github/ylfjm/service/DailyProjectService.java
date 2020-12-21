@@ -99,6 +99,8 @@ public class DailyProjectService {
      */
     public PageVO<DailyProject> page(int pageNum, int pageSize) {
         Example example = new Example(DailyProject.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("deleted", 0);
         example.orderBy("sorts").desc();
         PageHelper.startPage(pageNum, pageSize);
         Page<DailyProject> page = (Page<DailyProject>) dailyProjectMapper.selectByExample(example);
