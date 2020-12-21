@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -76,7 +77,7 @@ public class DailyService {
      * @param pageNum  第几页
      * @param pageSize 每页大小
      */
-    public PageVO<DailyDateVO> page(int pageNum, int pageSize) {
+    public PageVO<DailyDateVO> pageShow(int pageNum, int pageSize) {
         PageVO<DailyDateVO> pageVO = new PageVO<>(pageNum, pageSize);
         PageHelper.startPage(pageNum, pageSize);
         Page<DailyDateVO> datePage = dailyMapper.selectCreateDatePage();
@@ -125,6 +126,25 @@ public class DailyService {
             }
         }
         return pageVO;
+    }
+
+    /**
+     * 查询日报列表
+     *
+     * @param pageNum    第几页
+     * @param pageSize   每页大小
+     * @param searchType 搜索分类：all-所有；me-我的
+     */
+    public PageVO<Daily> page(int pageNum, int pageSize, String searchType) {
+        Example example = new Example(Daily.class);
+        if (StringUtils.hasText(searchType) && Objects.equals("me", searchType)) {
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("createBy", UserCache.getCurrentUserName());
+        }
+        example.orderBy("createDate").desc();
+        PageHelper.startPage(pageNum, pageSize);
+        Page<Daily> page = (Page<Daily>) dailyMapper.selectByExample(example);
+        return new PageVO<>(pageNum, page);
     }
 
 }
