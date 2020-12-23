@@ -6,12 +6,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 import java.io.IOException;
@@ -35,17 +37,15 @@ public class WebConfig extends WebMvcConfigurationSupport {
         registry.addInterceptor(requestInterceptor())
                 .order(Ordered.HIGHEST_PRECEDENCE + 1)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/error", "/actuator/**", "/monitor/**");
+                .excludePathPatterns("/error", "/actuator/**", "/monitor/**", "/static/**");
         registry.addInterceptor(permissionInterceptor())
                 .order(Ordered.HIGHEST_PRECEDENCE + 2)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/error", "/actuator/**", "/monitor/**");
+                .excludePathPatterns("/error", "/actuator/**", "/monitor/**", "/static/**");
     }
 
     /**
      * 解决spring.jackson.date-format, json方式全局日期序列化失效
-     *
-     * @param converters
      */
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -67,6 +67,20 @@ public class WebConfig extends WebMvcConfigurationSupport {
         objectMapper.setDateFormat(CustomDateFormat.instance);
         converter.setObjectMapper(objectMapper);
         converters.add(converter);
+    }
+
+    @Value("${file.staticAccessPath}")
+    private String staticAccessPath;
+    @Value("${file.resourceLocations}")
+    private String resourceLocations;
+
+    /**
+     * 文件上传配置
+     */
+    @Override
+    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler(staticAccessPath).addResourceLocations("file:///" + resourceLocations);
+        super.addResourceHandlers(registry);
     }
 
     @Bean

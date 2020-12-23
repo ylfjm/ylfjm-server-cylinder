@@ -19,6 +19,11 @@ spring:
     active: dev
   application:
     name: ylfjm-server-cylinder
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      location:
 ---
 spring:
   profiles: dev
@@ -28,6 +33,12 @@ spring:
       jdbc-url: jdbc:mysql://localhost:3333/ylfjm-cyl?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
       username: root
       password: 123456
+  servlet:
+    multipart:
+      location: D:/uploadFiles/
+file:
+  staticAccessPath: /static/uploadFiles/**
+  resourceLocations: D:/uploadFiles/
 ---
 spring:
   profiles: prod
@@ -37,3 +48,6 @@ spring:
       jdbc-url: jdbc:mysql://192.168.10.64:3333/ylfjm-cyl?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
       username: ymkjdev
       password: EMallSleep!2019
+file:
+  staticAccessPath: /static/uploadFiles/**
+  resourceLocations: /data/ylfjm/files/

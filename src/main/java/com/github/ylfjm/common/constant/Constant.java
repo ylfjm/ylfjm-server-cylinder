@@ -8,4 +8,6 @@ public interface Constant {
     String YLFJM_SERVICE_PRODUCT = "ylfjm-service-product";
     String YLFJM_SERVICE_USER = "ylfjm-service-user";
 
+    String DEV = "dev";
+    String PROD = "prod";
 }

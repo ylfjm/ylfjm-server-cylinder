@@ -1,6 +1,5 @@
 package com.github.ylfjm.config.web;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -45,14 +44,14 @@ public class GlobalReturnConfig {
             }
             log.info("------body instanceof WebMvcResult is false------");
             WebMvcResult<Object> result = new WebMvcResult<>(20000, "请求成功", body);
-            if (body instanceof String) {
+            /*if (body instanceof String) {
                 //如果接口返回类型是String类型这里要做转换，或者重写StringHttpMessageConverter，
                 //因为StringHttpMessageConverter的泛型指定为String类型，返回WebMvcResult类型会报强制类型转换错误异常
                 try {
                     return objectMapper.writeValueAsString(result);
                 } catch (JsonProcessingException ex) {
                 }
-            }
+            }*/
             return result;
         }
     }
