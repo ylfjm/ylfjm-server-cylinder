@@ -60,8 +60,10 @@ public class DailyProjectService {
         if (Objects.isNull(dailyProject)) {
             throw new BadRequestException("操作失败，日报项目不存在或已被删除");
         }
-        dailyProject.setDeleted(true);
-        dailyProjectMapper.updateByPrimaryKey(dailyProject);
+        DailyProject update = new DailyProject();
+        update.setId(id);
+        update.setDeleted(true);
+        dailyProjectMapper.updateByPrimaryKeySelective(update);
     }
 
     /**

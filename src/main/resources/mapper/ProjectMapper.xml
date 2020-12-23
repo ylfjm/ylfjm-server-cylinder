@@ -3,11 +3,11 @@
 
 <mapper namespace="com.github.ylfjm.mapper.ProjectMapper">
 
-    <select id="selectPage" resultType="com.github.ylfjm.pojo.po.Project">
+    <!--<select id="selectPage" resultType="com.github.ylfjm.pojo.po.Project">
         select * from project where deleted = 0
         <if test="status != null and status != ''">
             and `status` = #{status}
         </if>
-    </select>
+    </select>-->
 
 </mapper>

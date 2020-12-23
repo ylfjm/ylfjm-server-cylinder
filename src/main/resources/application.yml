@@ -2,15 +2,6 @@ server:
   port: 9999
   tomcat:
     uri-encoding: utf-8
-spring:
-  application:
-    name: ylfjm-server-cylinder
-  datasource:
-    hikari:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: jdbc:mysql://localhost:3333/ylfjm-cyl?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
-      username: root
-      password: 123456
 mybatis:
   type-aliases-package: com.github.ylfjm.**.po
   mapper-locations: classpath:mapper/*.xml
@@ -23,3 +14,26 @@ pagehelper:
   reasonable: true
   support-methods-arguments: true
   params: count=countSql
+spring:
+  profiles:
+    active: dev
+  application:
+    name: ylfjm-server-cylinder
+---
+spring:
+  profiles: dev
+  datasource:
+    hikari:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: jdbc:mysql://localhost:3333/ylfjm-cyl?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
+      username: root
+      password: 123456
+---
+spring:
+  profiles: prod
+  datasource:
+    hikari:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: jdbc:mysql://192.168.10.64:3333/ylfjm-cyl?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
+      username: ymkjdev
+      password: EMallSleep!2019

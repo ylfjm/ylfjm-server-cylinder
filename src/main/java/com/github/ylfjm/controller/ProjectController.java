@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,6 +46,17 @@ public class ProjectController {
     public void remove(@PathVariable("id") Integer id) {
         projectService.delete(id);
     }
+
+    /**
+     * 更新项目
+     *
+     * @param project 项目
+     */
+    @PutMapping(value = "/project")
+    public void update(@RequestBody Project project) {
+        projectService.update(project);
+    }
+
 
     /**
      * 查询项目列表
