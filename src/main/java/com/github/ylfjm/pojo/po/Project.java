@@ -31,8 +31,6 @@ public class Project {
     private String type;
     //项目名称
     private String name;
-    //项目代号
-    private String code;
     @DateTimeFormat(pattern = "yyyy-MM-dd")//入参格式化
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")//出参格式化
     //开始日期
@@ -43,25 +41,21 @@ public class Project {
     private Date end;
     //可用工作日
     private Integer days;
-    //项目状态：wait-未开始、doing-进行中、suspended-已挂起、closed-已关闭
+    //项目状态：doing-进行中、suspended-已挂起、closed-已关闭
     private String status;
     //被谁开启
     private String createBy;
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")//出参格式化
     //开启时间
     private Date createDate;
+    //被谁挂起
+    private String suspendedBy;
+    //挂起时间
+    private Date suspendedDate;
     //被谁关闭
     private String closedBy;
     //关闭时间
     private Date closedDate;
-    //被谁取消
-    private String canceledBy;
-    //取消时间
-    private Date canceledDate;
-    //访问控制：open-默认、private-私有、custom-自定义
-    private String acl;
-    //分组白名单
-    private String whitelist;
     //已删除(0-否,1-是)
     private Boolean deleted;
 

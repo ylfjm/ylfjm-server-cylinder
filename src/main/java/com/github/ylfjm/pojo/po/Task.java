@@ -32,7 +32,7 @@ public class Task {
     private Integer projectId;
     //任务名称
     private String name;
-    //任务类型
+    //任务类型：design-产品设计、ui-UI设计、develop-开发、test-测试、other-其它
     private String type;
     //优先级
     private Integer pri;

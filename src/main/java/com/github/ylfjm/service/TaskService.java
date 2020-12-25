@@ -299,9 +299,9 @@ public class TaskService {
         if (!StringUtils.hasText(task.getType())) {
             throw new BadRequestException("操作失败，请选择任务类型");
         }
-        if (task.getDeadline() == null) {
+        /*if (task.getDeadline() == null) {
             throw new BadRequestException("操作失败，请选择任务截止日期");
-        }
+        }*/
     }
 
     /**
@@ -564,6 +564,8 @@ public class TaskService {
                     throw new BadRequestException(errorMessage2);
                 }
                 record.setTestEstimateDate(task.getEstimateDate());
+                //任务截止日期设置为测试的排期
+                record.setDeadline(task.getEstimateDate());
             }
             if (task.getFinishedDate() != null) {
                 record.setTestFinishedDate(task.getFinishedDate());

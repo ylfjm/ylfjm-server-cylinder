@@ -6,6 +6,7 @@ import com.github.ylfjm.pojo.po.Daily;
 import com.github.ylfjm.pojo.vo.DailyDateVO;
 import com.github.ylfjm.service.DailyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +36,16 @@ public class DailyController {
     @PostMapping(value = "/daily")
     public void add(@RequestBody DailyDTO dailyDTO) {
         dailyService.add(dailyDTO);
+    }
+
+    /**
+     * 删除日报
+     *
+     * @param id 日报ID
+     */
+    @DeleteMapping(value = "/daily/{id}")
+    public void remove(@PathVariable("id") Integer id) {
+        dailyService.delete(id);
     }
 
     /**

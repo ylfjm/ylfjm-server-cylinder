@@ -52,7 +52,7 @@
             d.content,
             DATE_FORMAT(d.create_date,"%Y-%m-%d") as createDate
         from
-            daily d inner join position p on d.post_code = p.code
+            daily d inner join `position` p on d.post_code = p.code
         where
             DATE_FORMAT(d.create_date,"%Y-%m-%d") in
         <foreach collection="list" item="item" index="index" open="(" separator="," close=")">

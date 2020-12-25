@@ -35,7 +35,7 @@ public class ProjectService {
     public void add(Project project) {
         this.check(project);
         project.setId(null);
-        project.setStatus("wait");
+        project.setStatus("doing");
         project.setDeleted(false);
         int result = projectMapper.insert(project);
         if (result < 1) {
@@ -83,16 +83,7 @@ public class ProjectService {
         if (count > 0) {
             throw new BadRequestException("操作失败，该项目名称已存在");
         }
-        Example example2 = new Example(Project.class);
-        Example.Criteria criteria2 = example2.createCriteria();
-        criteria2.andNotEqualTo("id", project.getId());
-        criteria2.andEqualTo("code", project.getCode());
-        count = projectMapper.selectCountByExample(example2);
-        if (count > 0) {
-            throw new BadRequestException("操作失败，该项目代号已存在");
-        }
         record.setName(project.getName());
-        record.setCode(project.getCode());
         record.setBegin(project.getBegin());
         record.setEnd(project.getEnd());
         record.setDays(project.getDays());
@@ -109,9 +100,6 @@ public class ProjectService {
     private void check(Project project) {
         if (!StringUtils.hasText(project.getName())) {
             throw new BadRequestException("操作失败，项目名称不能为空");
-        }
-        if (!StringUtils.hasText(project.getCode())) {
-            throw new BadRequestException("操作失败，项目代号不能为空");
         }
         if (project.getBegin() == null) {
             throw new BadRequestException("操作失败，项目项目开始日期不能为空");

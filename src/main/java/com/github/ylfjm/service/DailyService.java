@@ -72,6 +72,22 @@ public class DailyService {
     }
 
     /**
+     * 删除日报
+     *
+     * @param id 日报ID
+     */
+    public void delete(Integer id) {
+        Daily daily = dailyMapper.selectByPrimaryKey(id);
+        if (daily == null) {
+            throw new BadRequestException("操作失败，日报不存在或已被删除");
+        }
+        if (!Objects.equals(daily.getCreateBy(), UserCache.getCurrentUserName())) {
+            throw new BadRequestException("操作失败，你不能删除别人的日报");
+        }
+        dailyMapper.deleteByPrimaryKey(id);
+    }
+
+    /**
      * 查询日报列表
      *
      * @param pageNum  第几页
