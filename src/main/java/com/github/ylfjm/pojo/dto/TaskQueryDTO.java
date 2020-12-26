@@ -14,6 +14,7 @@ import lombok.Setter;
 public class TaskQueryDTO {
 
     private String searchType;
+    private Integer projectId;
 
     private String idSortBy;
     private String priSortBy;

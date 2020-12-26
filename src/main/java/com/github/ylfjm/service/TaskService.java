@@ -256,6 +256,9 @@ public class TaskService {
         if (!CollectionUtils.isEmpty(statusList)) {
             example.and().andIn("status", statusList);
         }
+        if (taskQueryDTO.getProjectId() != null) {
+            example.and().andEqualTo("projectId", taskQueryDTO.getProjectId());
+        }
         if (StringUtils.hasText(developer)) {
             example.and().andEqualTo("pdDesigner", developer)
                     .orEqualTo("uiDesigner", developer)
