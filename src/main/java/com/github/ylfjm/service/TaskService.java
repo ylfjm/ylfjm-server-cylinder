@@ -293,6 +293,14 @@ public class TaskService {
         if (task.getProjectId() == null) {
             throw new BadRequestException("操作失败，请选择任务所属项目");
         }
+        Example example = new Example(Project.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("deleted", false);
+        criteria.andEqualTo("status", "doing");
+        int count = projectMapper.selectCountByExample(example);
+        if (count < 1) {
+            throw new BadRequestException("操作失败，任务所属项目不存在或已被删除");
+        }
         if (!StringUtils.hasText(task.getName())) {
             throw new BadRequestException("操作失败，任务名称不能为空");
         }
