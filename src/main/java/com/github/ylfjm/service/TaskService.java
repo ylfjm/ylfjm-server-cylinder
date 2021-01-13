@@ -7,7 +7,6 @@ import com.github.ylfjm.common.NotFoundException;
 import com.github.ylfjm.common.YlfjmException;
 import com.github.ylfjm.common.cache.UserCache;
 import com.github.ylfjm.common.pojo.vo.PageVO;
-import com.github.ylfjm.common.utils.DateUtil;
 import com.github.ylfjm.mapper.ProjectMapper;
 import com.github.ylfjm.mapper.TaskMapper;
 import com.github.ylfjm.mapper.TaskRemarkMapper;
@@ -427,10 +426,10 @@ public class TaskService {
             sb.append("修改了 <strong><em>优先级</em></strong>，旧值为\"").append(dbTask.getPri())
                     .append("\"，新值为\"").append(task.getPri()).append("\"。<br/>");
         }
-        if (!Objects.equals(dbTask.getDeadline(), task.getDeadline())) {
+        /*if (!Objects.equals(dbTask.getDeadline(), task.getDeadline())) {
             sb.append("修改了 <strong><em>截止日期</em></strong>，旧值为\"").append(DateUtil.dateToString2(dbTask.getDeadline()))
                     .append("\"，新值为\"").append(DateUtil.dateToString2(task.getDeadline())).append("\"。<br/>");
-        }
+        }*/
         sb.append(this.buildRichTextForAssign(dbTask, task, new StringBuffer()));
         return sb.toString();
     }
