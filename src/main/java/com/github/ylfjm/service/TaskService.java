@@ -232,6 +232,7 @@ public class TaskService {
         String developer = null;
         if (Objects.equals(searchType, TaskSearchType.all.name())) {
             statusList.add(TaskStatus.doing.name());
+            statusList.add(TaskStatus.devDone.name());
             statusList.add(TaskStatus.done.name());
             statusList.add(TaskStatus.cancel.name());
             statusList.add(TaskStatus.closed.name());
@@ -239,10 +240,13 @@ public class TaskService {
             developer = UserCache.getCurrentUserName();
         } else if (Objects.equals(searchType, TaskSearchType.notClosed.name())) {
             statusList.add(TaskStatus.doing.name());
+            statusList.add(TaskStatus.devDone.name());
             statusList.add(TaskStatus.done.name());
             statusList.add(TaskStatus.cancel.name());
         } else if (Objects.equals(searchType, TaskSearchType.doing.name())) {
             statusList.add(TaskStatus.doing.name());
+        } else if (Objects.equals(searchType, TaskSearchType.devDone.name())) {
+            statusList.add(TaskStatus.devDone.name());
         } else if (Objects.equals(searchType, TaskSearchType.done.name())) {
             statusList.add(TaskStatus.done.name());
         } else if (Objects.equals(searchType, TaskSearchType.cancel.name())) {
@@ -589,27 +593,37 @@ public class TaskService {
      * @param record 数据库中的
      */
     private void allCompleteHandler(Task record) {
+        boolean devComplete = true;
         boolean allComplete = true;
         if (record.getPdRequired() && record.getPdFinishedDate() == null) {
+            devComplete = false;
             allComplete = false;
         }
         if (record.getUiRequired() && record.getUiFinishedDate() == null) {
+            devComplete = false;
             allComplete = false;
         }
         if (record.getAndroidRequired() && record.getAndroidFinishedDate() == null) {
+            devComplete = false;
             allComplete = false;
         }
         if (record.getIosRequired() && record.getIosFinishedDate() == null) {
+            devComplete = false;
             allComplete = false;
         }
         if (record.getWebRequired() && record.getWebFinishedDate() == null) {
+            devComplete = false;
             allComplete = false;
         }
         if (record.getServerRequired() && record.getServerFinishedDate() == null) {
+            devComplete = false;
             allComplete = false;
         }
         if (record.getTestRequired() && record.getTestFinishedDate() == null) {
             allComplete = false;
+        }
+        if (devComplete) {
+            record.setStatus(TaskStatus.devDone.name());
         }
         if (allComplete) {
             record.setStatus(TaskStatus.done.name());

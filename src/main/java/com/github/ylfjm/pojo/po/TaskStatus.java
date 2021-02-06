@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 public enum TaskStatus {
 
-    doing, done, cancel, closed;
+    doing, devDone, done, cancel, closed;
 
     public static boolean contains(String status) {
         boolean result = false;

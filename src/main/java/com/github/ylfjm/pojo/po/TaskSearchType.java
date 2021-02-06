@@ -7,5 +7,5 @@ package com.github.ylfjm.pojo.po;
  * @Date 2020/11/15
  */
 public enum TaskSearchType {
-    all, assignMe, notClosed, doing, done, cancel, closed
+    all, assignMe, notClosed, doing, devDone, done, cancel, closed
 }

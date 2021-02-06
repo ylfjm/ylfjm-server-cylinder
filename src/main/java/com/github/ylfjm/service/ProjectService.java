@@ -79,6 +79,7 @@ public class ProjectService {
         Example.Criteria criteria = example.createCriteria();
         criteria.andNotEqualTo("id", project.getId());
         criteria.andEqualTo("name", project.getName());
+        criteria.andEqualTo("deleted", 0);
         int count = projectMapper.selectCountByExample(example);
         if (count > 0) {
             throw new BadRequestException("操作失败，该项目名称已存在");
