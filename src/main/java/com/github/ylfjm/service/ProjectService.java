@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.ylfjm.common.BadRequestException;
 import com.github.ylfjm.common.YlfjmException;
+import com.github.ylfjm.common.cache.UserCache;
 import com.github.ylfjm.common.pojo.vo.PageVO;
 import com.github.ylfjm.mapper.ProjectMapper;
 import com.github.ylfjm.pojo.po.Project;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
+
+import java.util.Date;
 
 /**
  * 描述：TODO
@@ -37,6 +40,8 @@ public class ProjectService {
         project.setId(null);
         project.setStatus("doing");
         project.setDeleted(false);
+        project.setCreateBy(UserCache.getCurrentUserName());
+        project.setCreateDate(new Date());
         int result = projectMapper.insert(project);
         if (result < 1) {
             throw new YlfjmException("操作失败，新增项目发生错误");
