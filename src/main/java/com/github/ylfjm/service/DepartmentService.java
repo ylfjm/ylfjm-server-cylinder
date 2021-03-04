@@ -135,7 +135,6 @@ public class DepartmentService {
                         admin.setHave(adminIdList.contains(admin.getId()));
                     }
                 }
-
             }
         }
         return list;

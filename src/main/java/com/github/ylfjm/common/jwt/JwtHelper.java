@@ -76,7 +76,7 @@ public class JwtHelper {
     public static String createJWTToken(JWTInfo jwt) {
         //过期时间（单位：秒）
         // int expire = jwt.getType() == SystemType.SYSTEM.getValue() ? 30 * 60 : -1;
-        int expire = 2 * 60 * 60;
+        int expire = 72 * 60 * 60;
         //jwt的颁发时间
         Date now = new Date();
         //JWT过期时间，设置在凌晨，使用概率比较低的时间点，避免用户正在使用token过期，数据丢失
